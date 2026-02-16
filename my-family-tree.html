@@ -762,24 +762,36 @@ const XLSX_FILENAME = 'TreeFamily_Main.xlsx';
     }
 
     async function tryLoadFromWebFetch(){
+      // Robust URL resolution (works on GitHub Pages, subpaths, and index/filename URLs)
+      const abs = new URL(XLSX_FILENAME, window.location.href).toString();
+
+      // Also try a couple of fallbacks (some hosts behave differently with / vs ./)
       const basePath = (window.location.pathname.endsWith('/')
         ? window.location.pathname
         : window.location.pathname.replace(/[^/]*$/, ''));
 
       const candidates = [
-        `./${XLSX_FILENAME}`,
+        abs,
         `${window.location.origin}${basePath}${XLSX_FILENAME}`,
+        `./${XLSX_FILENAME}`,
+        `${basePath}${XLSX_FILENAME}`,
         `/${XLSX_FILENAME}`
       ];
 
       const unique = Array.from(new Set(candidates));
       for (const url of unique){
-        try {
-          const res = await fetch(url, {cache:'no-store'});
+        try{
+          const res = await fetch(url, { cache: 'no-store' });
           if (!res.ok) continue;
           const buf = await res.arrayBuffer();
+          // Quick sanity check: avoid parsing a 404 HTML page as XLSX
+          const head = new Uint8Array(buf.slice(0, 32));
+          const headText = Array.from(head).map(b=>String.fromCharCode(b)).join('');
+          if (/^<!doctype html/i.test(headText) || /^<html/i.test(headText)) continue;
           return new Uint8Array(buf);
-        } catch {}
+        }catch(e){
+          // ignore and try next
+        }
       }
       return null;
     }
@@ -1857,17 +1869,3 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
