@@ -1,10 +1,8 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=1100, initial-scale=1">
   <title>شجرة العائلة</title>
   <style>
 :root{
@@ -311,7 +309,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .taharqa-box img{
-  width:100px;         /* يمكنك تغيير الحجم */
+  width:180px;         /* يمكنك تغيير الحجم */
   border-radius:8px;
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
@@ -325,7 +323,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .family-images img{
-  width:60px;            /* حجم الصورة */
+  width:80px;            /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;
@@ -338,86 +336,20 @@ input[placeholder="اسم الشخص"]{
 }
 
 .hoba-image img{
-  width:60px;               /* حجم الصورة */
+  width:85px;               /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;          /* 0 2px 6px rgba(0,0,0,0.25); */
 }
 
-/* ==============================
-   MOBILE RESPONSIVE FIX
-   ============================== */
 
+
+
+/* Keep desktop layout on mobile (avoid reflow/stacking) */
 @media (max-width: 900px){
-
-  /* stack layout vertically */
-  body{
-    overflow-x:hidden;
-  }
-
-  /* control white box */
-  .card{
-    position:relative !important;
-    right:auto !important;
-    margin:10px auto !important;
-    width:95% !important;
-    max-width:95% !important;
-  }
-
-  /* tree container */
-  #treeContainer{
-    margin-top:20px;
-    transform:scale(0.9);
-    transform-origin: top center;
-  }
-
-  /* header alignment */
-  .header{
-    flex-direction:column;
-    text-align:center;
-  }
-
-  /* village box center */
-  .village-box{
-    margin:10px auto;
-  }
+  body{min-width:1100px; overflow-x:auto;}
+  .wrap{max-width:none; width:1100px;}
 }
-
-/* =====================================
-   MOBILE — KEEP DESKTOP LAYOUT
-   ===================================== */
-@media (max-width: 900px){
-
-  body{
-    overflow-x: auto !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* create desktop-width canvas */
-  .container,
-  .wrapper,
-  .main{
-    min-width: 1100px !important;
-  }
-
-  /* keep UI box fixed */
-  .card, .ui-card{
-    position: absolute !important;
-  }
-
-  /* keep right info column fixed */
-  .page-meta{
-    position: absolute !important;
-  }
-
-  /* prevent images shrinking */
-  img{
-    max-width: none !important;
-  }
-}
-
-
 </style>
 </head>
 <body>
@@ -1410,22 +1342,13 @@ const parentCY = circleRect.top + circleRect.height/2 - wrapRect.top;
       renderTree();
     }
 
-    const APP_VERSION = "v2"; // change this when Excel changes
-    async function boot() {
-    const savedVersion = localStorage.getItem("tree_version");
-
-    if (savedVersion !== APP_VERSION) {
-       console.log("Version changed → reload Excel");
-       await loadFromExcelAndSave();
-       localStorage.setItem("tree_version", APP_VERSION);
-       } else {
-        const ok = await loadFromJsonIfExists();
-        if (!ok) await loadFromExcelAndSave();
-             }
-
-       renderTree();
-      }
-
+    async function boot(){
+      updateAdminVisibility();
+      clearSelected();
+      const ok = await loadFromJsonIfExists();
+      if (ok) { renderTree(); return; }
+      await loadFromExcelAndSave();
+    }
 
     // ---------------------- UI actions ----------------------
     $('searchBtn')?.addEventListener('click', doSearch);
