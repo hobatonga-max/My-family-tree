@@ -348,18 +348,13 @@ input[placeholder="اسم الشخص"]{
 
 /* ===== Mobile: keep desktop layout by scaling the whole .wrap canvas ===== */
 @media (max-width: 900px){
-  html, body{ overflow-x:hidden; }
-  body{ margin:0; }
-
   .wrap{
-    width: 1200px;
-    max-width: none !important;
-    transform-origin: top right;
-
-    position: relative;   /* ✅ enable right/left offsets */
-    right: 140px;          /* ✅ moves LEFT in RTL */
+    position: relative !important;
+    right: 140px !important;
+    left: auto !important;
   }
 }
+
 
 
 </style>
@@ -1892,6 +1887,7 @@ const blob = pdf.output('blob');
 </script>
 </body>
 </html>
+
 
 
 
