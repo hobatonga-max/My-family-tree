@@ -348,12 +348,11 @@ input[placeholder="اسم الشخص"]{
 
 /* ===== Mobile: keep desktop layout by scaling the whole .wrap canvas ===== */
 @media (max-width: 900px){
-  .wrap{
-    position: relative !important;
-    right: 140px !important;
-    left: auto !important;
+  .wrap, #wrap, .wrapper, #wrapper, .container, #container, .page, #page{
+    translate: -140px 0 !important; /* move LEFT */
   }
 }
+
 
 
 
@@ -1887,6 +1886,7 @@ const blob = pdf.output('blob');
 </script>
 </body>
 </html>
+
 
 
 
