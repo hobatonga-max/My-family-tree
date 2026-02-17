@@ -352,14 +352,15 @@ input[placeholder="اسم الشخص"]{
   body{ margin:0; }
 
   .wrap{
-    width: 1200px;               /* desktop canvas width */
+    width: 1200px;
     max-width: none !important;
+    transform-origin: top right;
 
-    transform-origin: top right; /* RTL: scale from the right */
-
-    margin-right: -300px;         /* ✅ move everything LEFT */
+    position: relative;   /* ✅ enable right/left offsets */
+    right: 140px;          /* ✅ moves LEFT in RTL */
   }
 }
+
 
 </style>
 </head>
@@ -1891,6 +1892,7 @@ const blob = pdf.output('blob');
 </script>
 </body>
 </html>
+
 
 
 
