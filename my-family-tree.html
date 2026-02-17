@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>شجرة العائلة</title>
@@ -309,7 +311,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .taharqa-box img{
-  width:180px;         /* يمكنك تغيير الحجم */
+  width:100px;         /* يمكنك تغيير الحجم */
   border-radius:8px;
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
@@ -323,7 +325,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .family-images img{
-  width:80px;            /* حجم الصورة */
+  width:60px;            /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;
@@ -336,7 +338,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .hoba-image img{
-  width:85px;               /* حجم الصورة */
+  width:60px;               /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;          /* 0 2px 6px rgba(0,0,0,0.25); */
@@ -380,165 +382,41 @@ input[placeholder="اسم الشخص"]{
     margin:10px auto;
   }
 }
-/* ==============================
-   HARD MOBILE FIX (NO OVERLAP)
-   ============================== */
+
+/* =====================================
+   MOBILE — KEEP DESKTOP LAYOUT
+   ===================================== */
 @media (max-width: 900px){
 
-  html, body{
-    width:100%;
-    overflow-x:hidden !important;
-  }
-
-  /* Force all top sections to behave normally (no absolute/fixed overlap) */
-  .card,
-  .ui-card,
-  .header,
-  .page-meta,
-  .right-panel,
-  .side-panel,
-  .sidebar,
-  .meta-box,
-  .whatsapp-box,
-  .taharqa-box,
-  .family-images,
-  .hoba-image,
-  .village-wrap,
-  .village-box{
-    position:static !important;
-    left:auto !important;
-    right:auto !important;
-    top:auto !important;
-    bottom:auto !important;
-    transform:none !important;
-    z-index:auto !important;
-  }
-
-  /* Make the control box fit the screen */
-  .card, .ui-card{
-    width:94vw !important;
-    max-width:94vw !important;
-    margin:12px auto !important;
-  }
-
-  /* Make side images never overflow */
-  img{
-    max-width:100% !important;
-    height:auto !important;
-  }
-
-  /* Tree area: allow horizontal scroll instead of overlap */
-  #treeContainer,
-  #treeWrap,
-  #tree,
-  .tree-container{
-    width:100% !important;
-    max-width:100% !important;
-    overflow:auto !important;
-    -webkit-overflow-scrolling: touch;
-    margin:12px auto 0 !important;
-  }
-
-  /* If your tree is drawn inside a canvas/svg/div, keep it scrollable */
-  canvas, svg{
-    max-width:none !important;
-  }
-}
-
-/* =========================
-   RESPONSIVE LAYOUT (SAFE)
-   Paste at END of <style>
-   ========================= */
-
-/* 1) Mobile-first safety: prevent overlap from fixed layouts */
-@media (max-width: 900px){
-  html, body{ width:100%; overflow-x:hidden; }
-
-  /* Cancel “desktop floating” on mobile for common panels */
-  .card, .ui-card, .sidebar, .side-panel, .right-panel, .page-meta,
-  .whatsapp-box, .taharqa-box, .family-images, .hoba-image, .village-box,
-  .header, .topbar, .controls, .panel{
-    position: static !important;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    bottom: auto !important;
-    transform: none !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    z-index: auto !important;
-  }
-
-  /* Make any “white box” fit phone width */
-  .card, .ui-card{
-    width: 94vw !important;
-    max-width: 94vw !important;
-    padding: 10px 10px !important;
-  }
-
-  /* Images never overflow */
-  img{ max-width: 100% !important; height: auto !important; }
-
-  /* Tree area becomes scrollable instead of overlapping */
-  #treeContainer, #treeWrap, #tree, .tree-container{
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: auto !important;
-    -webkit-overflow-scrolling: touch;
-    margin-top: 12px !important;
-  }
-
-  /* If your tree uses svg/canvas, allow it to be wider than screen */
-  canvas, svg{ max-width: none !important; }
-}
-
-/* 2) Desktop: keep your current look (no changes) */
-@media (min-width: 901px){
-  /* intentionally empty to avoid touching desktop */
-}
-/* ==============================
-   MOBILE: KEEP DESKTOP LAYOUT
-   (enable horizontal scrolling)
-   ============================== */
-@media (max-width: 900px){
-
-  /* allow the page to be wider than the phone */
   body{
     overflow-x: auto !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* set a minimum desktop-like canvas width */
-  .page,
+  /* create desktop-width canvas */
   .container,
-  .main,
-  .layout,
-  .wrapper{
-    min-width: 1100px !important; /* adjust if you want 1000 / 1200 */
+  .wrapper,
+  .main{
+    min-width: 1100px !important;
   }
 
-  /* IMPORTANT: do NOT stack items */
+  /* keep UI box fixed */
   .card, .ui-card{
-    position: absolute !important;   /* keep box where it is */
+    position: absolute !important;
   }
 
-  /* keep right column content where it is (pictures/info) */
-  .sidebar, .right-panel, .side-panel, .page-meta{
-    position: absolute !important;   /* keep it pinned on the right */
+  /* keep right info column fixed */
+  .page-meta{
+    position: absolute !important;
   }
 
-  /* keep tree container where it is */
-  #treeContainer, #treeWrap, #tree, .tree-container{
-    position: relative !important;   /* keep it like desktop */
-  }
-
-  /* prevent images from shrinking too much */
+  /* prevent images shrinking */
   img{
     max-width: none !important;
   }
 }
-    
+
 
 </style>
 </head>
@@ -2070,6 +1948,3 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
-
-
-
