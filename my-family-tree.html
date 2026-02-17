@@ -496,6 +496,48 @@ input[placeholder="اسم الشخص"]{
 @media (min-width: 901px){
   /* intentionally empty to avoid touching desktop */
 }
+/* ==============================
+   MOBILE: KEEP DESKTOP LAYOUT
+   (enable horizontal scrolling)
+   ============================== */
+@media (max-width: 900px){
+
+  /* allow the page to be wider than the phone */
+  body{
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* set a minimum desktop-like canvas width */
+  .page,
+  .container,
+  .main,
+  .layout,
+  .wrapper{
+    min-width: 1100px !important; /* adjust if you want 1000 / 1200 */
+  }
+
+  /* IMPORTANT: do NOT stack items */
+  .card, .ui-card{
+    position: absolute !important;   /* keep box where it is */
+  }
+
+  /* keep right column content where it is (pictures/info) */
+  .sidebar, .right-panel, .side-panel, .page-meta{
+    position: absolute !important;   /* keep it pinned on the right */
+  }
+
+  /* keep tree container where it is */
+  #treeContainer, #treeWrap, #tree, .tree-container{
+    position: relative !important;   /* keep it like desktop */
+  }
+
+  /* prevent images from shrinking too much */
+  img{
+    max-width: none !important;
+  }
+}
     
 
 </style>
@@ -2028,5 +2070,6 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
+
 
 
