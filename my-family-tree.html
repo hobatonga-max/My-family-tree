@@ -1335,13 +1335,22 @@ const parentCY = circleRect.top + circleRect.height/2 - wrapRect.top;
       renderTree();
     }
 
-    async function boot(){
-      updateAdminVisibility();
-      clearSelected();
-      const ok = await loadFromJsonIfExists();
-      if (ok) { renderTree(); return; }
-      await loadFromExcelAndSave();
-    }
+    const APP_VERSION = "v2"; // change this when Excel changes
+    async function boot() {
+    const savedVersion = localStorage.getItem("tree_version");
+
+    if (savedVersion !== APP_VERSION) {
+       console.log("Version changed → reload Excel");
+       await loadFromExcelAndSave();
+       localStorage.setItem("tree_version", APP_VERSION);
+       } else {
+        const ok = await loadFromJsonIfExists();
+        if (!ok) await loadFromExcelAndSave();
+             }
+
+       renderTree();
+      }
+
 
     // ---------------------- UI actions ----------------------
     $('searchBtn')?.addEventListener('click', doSearch);
