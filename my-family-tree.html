@@ -346,7 +346,14 @@ input[placeholder="اسم الشخص"]{
 
 /* ===== Mobile non-overlap layout (keeps RTL, avoids absolute overlays) ===== */
 @media (max-width: 900px){
-  .wrap{max-width:none; padding:12px;}
+ 
+  .wrap{
+    max-width:none;
+    padding:12px;
+    transform-origin: top right;   /* RTL */
+    transform: scale(1.15);        /* enlarge a bit */
+  }
+  
   /* Make the right meta area participate in layout instead of overlaying */
   .page-meta{
     position: static !important;
@@ -1898,3 +1905,4 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
+
