@@ -347,11 +347,16 @@ input[placeholder="اسم الشخص"]{
 /* ===== Mobile non-overlap layout (keeps RTL, avoids absolute overlays) ===== */
 @media (max-width: 900px){
  
-  .wrap{
+.wrap{
     max-width:none;
     padding:12px;
-    transform-origin: top right;   /* RTL */
-    transform: scale(.05);        /* enlarge a bit */
+    transform-origin: top right !important;
+    transform: scale(1.18) !important;
+  }
+
+  /* 🔴 TEMPORARY TEST — DO NOT KEEP */
+  .wrap{
+    outline: 6px solid red !important;
   }
   
   /* Make the right meta area participate in layout instead of overlaying */
@@ -1905,6 +1910,7 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
+
 
 
 
