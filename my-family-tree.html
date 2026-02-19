@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>شجرة العائلة</title>
@@ -309,7 +311,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .taharqa-box img{
-  width:180px;         /* يمكنك تغيير الحجم */
+  width:100px;         /* يمكنك تغيير الحجم */
   border-radius:8px;
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
@@ -323,7 +325,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .family-images img{
-  width:80px;            /* حجم الصورة */
+  width:60px;            /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;
@@ -336,100 +338,112 @@ input[placeholder="اسم الشخص"]{
 }
 
 .hoba-image img{
-  width:85px;               /* حجم الصورة */
+  width:60px;               /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;          /* 0 2px 6px rgba(0,0,0,0.25); */
 }
 
+/* ==============================
+   MOBILE RESPONSIVE FIX
+   ============================== */
 
-
-/* =========================
-   RESPONSIVE REBUILD (layout only)
-   Keeps tree/circles logic untouched
-   ========================= */
-
-.wrap{
-  max-width: 1400px;
-}
-
-/* New 2-column layout */
-.content{
-  display:flex;
-  flex-direction: row-reverse; /* RTL: sidebar appears on the right */
-  align-items:flex-start;
-  gap: 18px;
-  margin-top: 14px;
-}
-
-/* Sidebar on the right (RTL) */
-.sidebar{
-  flex: 0 0 340px;
-  max-width: 340px;
-}
-
-/* Reduce sidebar images by ~30% (exclude WhatsApp icon) */
-.sidebar img:not(.whatsapp-icon){
-  max-width: 70%;
-  height: auto;
-  display: block;
-  margin-inline: auto;
-}
-
-/* Main column (controls + tree) */
-.maincol{
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* Village title should be in normal flow */
-.village-wrap{
-  position: static !important;
-  top:auto !important;
-  right:auto !important;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap: 14px;
-  direction: rtl;
-  margin-top: 10px;
-}
-
-/* Page meta as sidebar content */
-.page-meta{
-  position: static !important;
-  top:auto !important;
-  right:auto !important;
-  margin-top: 0;
-}
-
-/* Keep tree visible and allow horizontal scroll on small screens */
-#treeHost{
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Mobile: keep desktop functions but avoid overlaps */
 @media (max-width: 900px){
-  .wrap{max-width: 100%; padding: 12px; overflow-x:hidden;}
-  /* Put main (controls+tree) first, then sidebar content below */
-  .content{flex-direction:column-reverse; gap:14px; align-items:stretch;}
-  .maincol{width:100%;}
-  .sidebar{flex: 0 0 auto; max-width: 100%; width:100%; margin-top: 6px;}
-  .card{max-width: 100%; margin: 0;}
-  .searchInput{min-width: 140px; max-width: 100%;}
-  #treeHost{max-width:100%;}
 
-  /* Make sidebar cards/media fit phone width */
-  .family-card{max-width: 420px; margin: 0 auto;}
-  .family-card img{max-width:100%; height:auto; display:block;}
-  .family-images{justify-content:center; gap:10px;}
+  /* stack layout vertically */
+  body{
+    overflow-x:hidden;
+  }
+
+  /* control white box */
+  .card{
+    position:relative !important;
+    right:auto !important;
+    margin:10px auto !important;
+    width:95% !important;
+    max-width:95% !important;
+  }
+
+  /* tree container */
+  #treeContainer{
+    margin-top:20px;
+    transform:scale(0.9);
+    transform-origin: top center;
+  }
+
+  /* header alignment */
+  .header{
+    flex-direction:column;
+    text-align:center;
+  }
+
+  /* village box center */
+  .village-box{
+    margin:10px auto;
+  }
 }
 
+/* =====================================
+   MOBILE — KEEP DESKTOP LAYOUT
+   ===================================== */
+@media (max-width: 900px){
+
+  body{
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* create desktop-width canvas */
+  .container,
+  .wrapper,
+  .main{
+    min-width: 1100px !important;
+  }
+
+  /* keep UI box fixed */
+  .card, .ui-card{
+    position: absolute !important;
+  }
+
+  /* keep right info column fixed */
+  .page-meta{
+    position: absolute !important;
+  }
+
+  /* prevent images shrinking */
+  img{
+    max-width: none !important;
+  }
+}
+
+
+
+/* === Responsive: keep SAME desktop layout on mobile by scaling the whole page canvas === */
+:root{ --uiScale: 1; }
+
+/* Container that holds EVERYTHING (header + sidebar + panel + tree) */
+#viewportScale{
+  /* desktop canvas width (matches .wrap max-width) */
+  width: 980px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* On small screens: scale down the whole canvas from the RIGHT (RTL) */
+@media (max-width: 980px){
+  html, body{ overflow-x: hidden; }
+  #viewportScale{
+    margin: 0;
+    transform: scale(var(--uiScale));
+    transform-origin: top right;
+  }
+}
 
 </style>
 </head>
 <body>
+  <div id="viewportScale">
   <div class="wrap">
     <div class="header">
       <div class="logo">🌿</div>
@@ -451,8 +465,7 @@ input[placeholder="اسم الشخص"]{
      </div>
 
 
-<div class="content">
-  <aside class="sidebar">
+
 <div class="page-meta">
   <div>تم تطويره بواسطة: ايهاب عثمان تونجا</div>
   <div>حقوق النسخ محفوظة</div>
@@ -482,9 +495,19 @@ input[placeholder="اسم الشخص"]{
   </div>
 
 </div>
-  </aside>
-  <main class="maincol">
-<div class="card">
+
+
+   <div style="
+      text-align:center;
+      font-size:12px;
+      font-weight:bold;
+      line-height:1.6;
+      margin-right:350px;
+      ">
+      
+   </div>
+
+    <div class="card">
       <div id="status" class="status"></div>
 
       <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
@@ -567,9 +590,6 @@ input[placeholder="اسم الشخص"]{
 </div>
 
     <div id="treeHost" style="margin-top:16px"></div>
-  </main>
-</div>
-
 
     <!-- نافذة تأكيد الحذف -->
     <div id="deleteConfirmModal" style="display:none;position:fixed;inset:0;background:#0006;backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
@@ -1413,13 +1433,22 @@ const parentCY = circleRect.top + circleRect.height/2 - wrapRect.top;
       renderTree();
     }
 
-    async function boot(){
-      updateAdminVisibility();
-      clearSelected();
-      const ok = await loadFromJsonIfExists();
-      if (ok) { renderTree(); return; }
-      await loadFromExcelAndSave();
-    }
+    const APP_VERSION = "v2"; // change this when Excel changes
+    async function boot() {
+    const savedVersion = localStorage.getItem("tree_version");
+
+    if (savedVersion !== APP_VERSION) {
+       console.log("Version changed → reload Excel");
+       await loadFromExcelAndSave();
+       localStorage.setItem("tree_version", APP_VERSION);
+       } else {
+        const ok = await loadFromJsonIfExists();
+        if (!ok) await loadFromExcelAndSave();
+             }
+
+       renderTree();
+      }
+
 
     // ---------------------- UI actions ----------------------
     $('searchBtn')?.addEventListener('click', doSearch);
@@ -1940,5 +1969,32 @@ const blob = pdf.output('blob');
     // Start
     boot();
   </script>
+  </div>
+
+<script>
+(function(){
+  const BASE_WIDTH = 980; // must match #viewportScale width
+  function applyScale(){
+    const el = document.getElementById('viewportScale');
+    if(!el) return;
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    const scale = Math.min(1, vw / BASE_WIDTH);
+    document.documentElement.style.setProperty('--uiScale', scale.toFixed(4));
+
+    // Keep the document scroll height correct after scaling
+    requestAnimationFrame(function(){
+      const h = el.getBoundingClientRect().height;
+      // getBoundingClientRect already includes the scale, so no extra multiply
+      document.body.style.height = Math.ceil(h) + 'px';
+    });
+  }
+  window.addEventListener('resize', applyScale, {passive:true});
+  window.addEventListener('orientationchange', applyScale, {passive:true});
+  document.addEventListener('DOMContentLoaded', applyScale);
+  // in case images/excel load later and change height
+  window.addEventListener('load', applyScale);
+})();
+</script>
+
 </body>
 </html>
