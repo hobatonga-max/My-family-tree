@@ -4,7 +4,6 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>شجرة العائلة</title>
   <style>
 :root{
@@ -348,41 +347,6 @@ input[placeholder="اسم الشخص"]{
    MOBILE RESPONSIVE FIX
    ============================== */
 
-@media (max-width: 900px){
-
-  /* stack layout vertically */
-  body{
-    overflow-x:hidden;
-  }
-
-  /* control white box */
-  .card{
-    position:relative !important;
-    right:auto !important;
-    margin:10px auto !important;
-    width:95% !important;
-    max-width:95% !important;
-  }
-
-  /* tree container */
-  #treeContainer{
-    margin-top:20px;
-    transform:scale(0.9);
-    transform-origin: top center;
-  }
-
-  /* header alignment */
-  .header{
-    flex-direction:column;
-    text-align:center;
-  }
-
-  /* village box center */
-  .village-box{
-    margin:10px auto;
-  }
-}
-
 /* =====================================
    MOBILE — KEEP DESKTOP LAYOUT
    ===================================== */
@@ -438,6 +402,22 @@ input[placeholder="اسم الشخص"]{
     transform: scale(var(--uiScale));
     transform-origin: top right;
   }
+}
+
+
+/* === FINAL MOBILE OVERRIDE: force DESKTOP layout, then scale whole canvas === */
+@media (max-width: 900px){
+  /* undo any mobile stacking rules */
+  .wrap{ max-width: 980px !important; }
+  .header{ flex-direction: row !important; text-align: right !important; }
+  .village-wrap{ justify-content: flex-start !important; }
+  .card, .ui-card{
+    position: absolute !important;
+    margin: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+  #treeContainer{ transform: none !important; }
 }
 
 </style>
