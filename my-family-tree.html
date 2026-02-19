@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="viewport" content="width=1200, initial-scale=0.33, maximum-scale=3, user-scalable=yes">
 
   <meta charset="utf-8" />
   <title>شجرة العائلة</title>
@@ -1950,31 +1950,6 @@ const blob = pdf.output('blob');
     boot();
   </script>
   </div>
-
-<script>
-(function(){
-  const BASE_WIDTH = 980; // must match #viewportScale width
-  function applyScale(){
-    const el = document.getElementById('viewportScale');
-    if(!el) return;
-    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-    const scale = Math.min(1, vw / BASE_WIDTH);
-    document.documentElement.style.setProperty('--uiScale', scale.toFixed(4));
-
-    // Keep the document scroll height correct after scaling
-    requestAnimationFrame(function(){
-      const h = el.getBoundingClientRect().height;
-      // getBoundingClientRect already includes the scale, so no extra multiply
-      document.body.style.height = Math.ceil(h) + 'px';
-    });
-  }
-  window.addEventListener('resize', applyScale, {passive:true});
-  window.addEventListener('orientationchange', applyScale, {passive:true});
-  document.addEventListener('DOMContentLoaded', applyScale);
-  // in case images/excel load later and change height
-  window.addEventListener('load', applyScale);
-})();
-</script>
 
 </body>
 </html>
