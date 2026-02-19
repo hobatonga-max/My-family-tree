@@ -350,8 +350,9 @@ input[placeholder="اسم الشخص"]{
 .wrap{
     max-width:none;
     padding:12px;
-    transform-origin: top right !important;
-    transform: scale(1.18) !important;
+
+    transform: none !important;   /* ✅ cancel any scaling */
+    zoom: 1.15 !important;        /* ✅ enlarge safely */
   }
 
   /* 🔴 TEMPORARY TEST — DO NOT KEEP */
@@ -1910,6 +1911,7 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
+
 
 
 
