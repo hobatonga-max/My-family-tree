@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>شجرة العائلة</title>
   <style>
 :root{
@@ -346,22 +346,78 @@ input[placeholder="اسم الشخص"]{
 
 /* ===== Mobile non-overlap layout (RTL) + correct order ===== */
 @media (max-width: 900px){
-  /* Keep the SAME desktop layout on mobile:
-     - no stacking
-     - no re-ordering
-     - allow horizontal scroll if needed */
-  html, body{ overflow-x: auto; }
-  body{ margin: 0; }
 
   .wrap{
-    width: 980px;              /* same as desktop max-width */
-    max-width: none !important;
-    margin: 0;                 /* don't auto-center on tiny screens */
-    padding: 20px;
+    max-width:none !important;
+    padding:12px !important;
+
+    outline: none !important;
+    transform: none !important;
+    zoom: 1 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
   }
 
-  /* Slightly tame large side images so they don't hide UI */
-  .page-meta img{ max-width: 300px; height: auto; }
+  .card{
+    order: 1 !important;
+    max-width: 100% !important;
+    margin: 12px 0 !important;
+  }
+
+  #treeHost{
+    order: 2 !important;
+    justify-content: flex-end !important;
+    padding-right: 0 !important;
+  }
+
+  .page-meta{
+    order: 3 !important;
+
+    position: static !important;
+    top:auto !important;
+    right:auto !important;
+
+    margin: 10px 0 0 0 !important;
+    text-align: right !important;
+    width: 100% !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
+  }
+
+  .page-meta img{
+    max-width: 220px !important;
+    height: auto !important;
+  }
+}
+
+/* ===== MOBILE: keep desktop layout by scaling the whole desktop canvas (no reflow) ===== */
+@media (max-width: 900px){
+  html, body { overflow-x: hidden !important; }
+  body{ margin:0 !important; }
+  /* Force desktop canvas width; JS will scale it to fit the screen */
+  .wrap{
+    width: 1200px !important;         /* desktop canvas width */
+    max-width: none !important;
+    transform-origin: top right !important; /* RTL: scale from the right */
+    will-change: transform;
+  }
+  /* IMPORTANT: cancel any "mobile stacking" rules that were added before */
+  .page-meta{
+    position: absolute !important;
+    width: auto !important;
+    display: block !important;
+    flex: none !important;
+  }
+  .card{
+    position: absolute !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
 }
 </style>
 </head>
@@ -1882,6 +1938,35 @@ const blob = pdf.output('blob');
     // Start
     boot();
   </script>
+
+<script>
+/* Mobile = show the same desktop layout by scaling the whole canvas.
+   This avoids "stacking" that breaks the side-by-side layout. */
+(function(){
+  const BASE_W = 1200;   // must match .wrap width above
+  function applyScale(){
+    const wrap = document.querySelector('.wrap');
+    if(!wrap) return;
+
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    if(vw <= 900){
+      const scale = Math.min(1, vw / BASE_W);
+      wrap.style.transform = 'scale(' + scale + ')';
+
+      // Prevent extra blank space & ensure page can scroll to the bottom
+      const scaledH = Math.ceil(wrap.scrollHeight * scale);
+      document.body.style.height = scaledH + 'px';
+    } else {
+      wrap.style.transform = '';
+      document.body.style.height = '';
+    }
+  }
+  window.addEventListener('load', applyScale, {passive:true});
+  window.addEventListener('resize', applyScale, {passive:true});
+  window.addEventListener('orientationchange', applyScale, {passive:true});
+  applyScale();
+})();
+</script>
 </body>
 </html>
 
