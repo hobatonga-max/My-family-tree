@@ -59,11 +59,10 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 
     /* Tree positioning: right aligned, not glued to the edge */
     #treeHost{
-      display:flex;
-      justify-content:flex-start;   /* moved left as requested */
-      padding-right:40px;
-      padding: 0 12px;          /* small safe padding on both sides */
-      width:100%;
+      display:inline-block;
+      width:max-content;
+      min-width:100%;
+      padding: 0 12px;
     }
 
 /* ===== Circle image (copied from my-family-tree.html) ===== */
@@ -404,11 +403,6 @@ input[placeholder="اسم الشخص"]{
 }
 
 /* Keep tree visible and allow horizontal scroll on small screens */
-#treeHost{
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* Mobile: keep desktop functions but avoid overlaps */
 @media (max-width: 900px){
   /* Mobile layout similar to the reference screenshot: 2 columns (tree left, sidebar right) */
@@ -477,12 +471,6 @@ input[placeholder="اسم الشخص"]{
 
 
   /* Tree area: keep nicely centered inside the left column */
-  #treeHost{
-    justify-content:flex-start;
-    padding-right:18px;
-    padding-left:6px;
-  }
-
   /* Sidebar images alignment */
   .taharqa-box img{max-width:100%; height:auto; display:block; margin:0 auto;}
   .family-images{justify-content:center; gap:10px; margin-right:0;}
@@ -508,6 +496,11 @@ input[placeholder="اسم الشخص"]{
     min-width:100%;          /* at least fill the viewport */
     max-width:none;          /* do NOT clamp */
   }
+
+
+  /* Let the layout grow horizontally as the tree expands (avoid "stuck" scroll range) */
+  #pageScroll .content{width:max-content;}
+  #pageScroll .maincol{width:max-content;}
 
 </style>
 </head>
