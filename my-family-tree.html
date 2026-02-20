@@ -509,6 +509,9 @@ input[placeholder="اسم الشخص"]{
     max-width:none;          /* do NOT clamp */
   }
 
+
+  #pageScroll{touch-action: pan-x pan-y; overscroll-behavior: contain;}
+
 </style>
 </head>
 <body>
@@ -693,6 +696,20 @@ const XLSX_FILENAME = 'TreeFamily_Main.xlsx';
 
     function isAdmin(){
       try { return sessionStorage.getItem(ADMIN_SESSION_KEY) === '1'; } catch { return false; }
+      // restore scroll after layout updates (keeps same distance from right edge)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          try{
+            const sc = document.getElementById('pageScroll') || document.scrollingElement || document.documentElement;
+            if (!sc) return;
+            const cw = sc.clientWidth || 0;
+            const sw = sc.scrollWidth || 0;
+            const targetLeft = Math.max(0, sw - cw - __fromRight);
+            sc.scrollLeft = targetLeft;
+          }catch(e){}
+        });
+      });
+
     }
 
     function getEffectivePinHash(){
@@ -1102,6 +1119,13 @@ const XLSX_FILENAME = 'TreeFamily_Main.xlsx';
 
     // ---------------------- Rendering ----------------------
     function renderTree(){
+      // preserve horizontal scroll position (distance from right edge) across re-renders
+      const __scroller = document.getElementById('pageScroll') || document.scrollingElement || document.documentElement;
+      const __prevClient = __scroller && __scroller.clientWidth ? __scroller.clientWidth : 0;
+      const __prevScrollW = __scroller && __scroller.scrollWidth ? __scroller.scrollWidth : 0;
+      const __prevLeft = __scroller && typeof __scroller.scrollLeft === 'number' ? __scroller.scrollLeft : 0;
+      const __fromRight = Math.max(0, (__prevScrollW - __prevClient - __prevLeft));
+
       const people = appState.people;
       const host = $('treeHost');
       if (!host) return;
