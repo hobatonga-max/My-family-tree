@@ -344,61 +344,72 @@ input[placeholder="اسم الشخص"]{
 
 
 
-/* ===== Mobile non-overlap layout (RTL) + correct order ===== */
-.card{
-    order: 1 !important;
-    max-width: 100% !important;
-    margin: 12px 0 !important;
-  }
+/* =========================
+   RESPONSIVE REBUILD (layout only)
+   Keeps tree/circles logic untouched
+   ========================= */
 
-  #treeHost{
-    order: 2 !important;
-    justify-content: flex-end !important;
-    padding-right: 0 !important;
-  }
-
-  .page-meta{
-    order: 3 !important;
-
-    position: static !important;
-    top:auto !important;
-    right:auto !important;
-
-    margin: 10px 0 0 0 !important;
-    text-align: right !important;
-    width: 100% !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
-    gap: 6px !important;
-  }
-
-  .page-meta img{
-    max-width: 220px !important;
-    height: auto !important;
-  }
+.wrap{
+  max-width: 1400px;
 }
 
+/* New 2-column layout */
+.content{
+  display:flex;
+  align-items:flex-start;
+  gap: 18px;
+  margin-top: 14px;
+}
 
-/* ===== Mobile: keep EXACT desktop layout, enable horizontal scroll (no reflow) ===== */
+/* Sidebar on the right (RTL) */
+.sidebar{
+  flex: 0 0 340px;
+  max-width: 340px;
+}
+
+/* Main column (controls + tree) */
+.maincol{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Village title should be in normal flow */
+.village-wrap{
+  position: static !important;
+  top:auto !important;
+  right:auto !important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 14px;
+  direction: rtl;
+  margin-top: 10px;
+}
+
+/* Page meta as sidebar content */
+.page-meta{
+  position: static !important;
+  top:auto !important;
+  right:auto !important;
+  margin-top: 0;
+}
+
+/* Keep tree visible and allow horizontal scroll on small screens */
+#treeHost{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile: stack columns, keep everything readable */
 @media (max-width: 900px){
-  html, body{
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-  /* Keep the desktop canvas width so nothing stacks/overlaps */
-  .wrap{
-    width: 1200px !important;
-    max-width: none !important;
-    min-width: 1200px !important;
-  }
-  /* Prevent the browser from shrinking text too aggressively */
-  body{
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
+  .wrap{max-width: 100%; padding: 12px;}
+  .content{flex-direction:column; gap:12px;}
+  .sidebar{flex: 0 0 auto; max-width: 100%; width:100%;}
+  .card{max-width: 100%;}
+  .searchInput{min-width: 140px; max-width: 100%;}
+  .family-images{justify-content:flex-start;}
 }
+
 </style>
 </head>
 <body>
@@ -423,7 +434,8 @@ input[placeholder="اسم الشخص"]{
      </div>
 
 
-
+<div class="content">
+  <aside class="sidebar">
 <div class="page-meta">
   <div>تم تطويره بواسطة: ايهاب عثمان تونجا</div>
   <div>حقوق النسخ محفوظة</div>
@@ -453,19 +465,9 @@ input[placeholder="اسم الشخص"]{
   </div>
 
 </div>
-
-
-   <div style="
-      text-align:center;
-      font-size:12px;
-      font-weight:bold;
-      line-height:1.6;
-      margin-right:350px;
-      ">
-      
-   </div>
-
-    <div class="card">
+  </aside>
+  <main class="maincol">
+<div class="card">
       <div id="status" class="status"></div>
 
       <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
@@ -548,6 +550,9 @@ input[placeholder="اسم الشخص"]{
 </div>
 
     <div id="treeHost" style="margin-top:16px"></div>
+  </main>
+</div>
+
 
     <!-- نافذة تأكيد الحذف -->
     <div id="deleteConfirmModal" style="display:none;position:fixed;inset:0;background:#0006;backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
@@ -1920,15 +1925,3 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
