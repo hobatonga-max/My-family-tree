@@ -3,7 +3,7 @@
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=1200">
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>شجرة العائلة</title>
 <style>
 :root{
@@ -14,7 +14,7 @@
 }
 
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f8fafc;color:#0f172a;direction:rtl}
-    .wrap{max-width:980px;margin:0 auto;padding:20px;position:relative}
+    .wrap{max-width:980px;margin:0 auto;padding:20px}
     .header{display:flex;align-items:center;gap:12px}
     .logo{width:48px;height:48px;border-radius:9999px;background:#90c290;display:grid;place-items:center;color:#fff;font-weight:700}
     h1{margin:0;font-size:22px}
@@ -346,17 +346,20 @@ input[placeholder="اسم الشخص"]{
 
 
 
-/* ===============================
-   Mobile: scale whole layout (keep desktop positions)
-   =============================== */
+/* =========================================
+   MOBILE: KEEP DESKTOP LAYOUT (SCALED CANVAS)
+   - No reflow / no stacking
+   ========================================= */
 @media (max-width: 900px){
-  html,body{width:100%;overflow-x:hidden;}
-  /* keep a fixed design width so everything scales together */
+  body{
+    overflow-x:hidden;
+    overflow-y:auto;
+  }
+  /* treat as a fixed desktop canvas */
   .wrap{
-    width:980px;
-    max-width:none;
+    width: 1200px;          /* desktop canvas width */
+    max-width: none !important;
     transform-origin: top right; /* RTL */
-    will-change: transform;
   }
 }
 </style>
@@ -1846,38 +1849,29 @@ const blob = pdf.output('blob');
   </script>
 <script>
 (function(){
-  function applyMobileScale(){
+  function applyDesktopScale(){
     var wrap = document.querySelector('.wrap');
     if(!wrap) return;
-
-    var isMobile = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+    var isMobile = window.matchMedia('(max-width: 900px)').matches;
     if(!isMobile){
       wrap.style.transform = '';
       document.body.style.height = '';
       return;
     }
-
-    // Ensure layout is at design size before measuring
-    wrap.style.transform = '';
-    // Use offsetWidth (design width) and fit to viewport
-    var vw = window.innerWidth || document.documentElement.clientWidth || 360;
-    var w  = wrap.offsetWidth || 980;
-    var scale = vw / w;
-
-    // Clamp scale to avoid too tiny
-    if(scale > 1) scale = 1;
-    if(scale < 0.25) scale = 0.25;
-
-    wrap.style.transform = 'scale(' + scale + ')';
-
-    // Reserve vertical space so page can scroll normally
-    var h = wrap.offsetHeight || wrap.scrollHeight || 1000;
-    document.body.style.height = (h * scale) + 'px';
+    var canvasW = 1200; // must match CSS
+    var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var scale = Math.min(1, vw / canvasW);
+    // apply scaling
+    wrap.style.transform = 'scale(' + scale.toFixed(4) + ')';
+    // keep page scroll height correct
+    var h = wrap.scrollHeight * scale;
+    document.body.style.height = (h + 50) + 'px';
   }
-
-  window.addEventListener('load', applyMobileScale);
-  window.addEventListener('resize', applyMobileScale);
-  window.addEventListener('orientationchange', applyMobileScale);
+  window.addEventListener('resize', applyDesktopScale);
+  window.addEventListener('orientationchange', applyDesktopScale);
+  document.addEventListener('DOMContentLoaded', applyDesktopScale);
+  // in case scripts load late
+  setTimeout(applyDesktopScale, 50);
 })();
 </script></body>
 </html>
