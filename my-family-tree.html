@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>شجرة العائلة</title>
   <style>
 :root{
@@ -344,37 +344,36 @@ input[placeholder="اسم الشخص"]{
 
 
 
-/* ===== Mobile non-overlap layout (RTL) + correct order ===== */
-
-
-/* ===== MOBILE: keep desktop layout by scaling the whole desktop canvas (no reflow) ===== */
-
-
-/* ===== Layout columns (desktop + mobile share the same structure) ===== */
-.layout{
-  display: flex;
-  flex-direction: row-reverse; /* RTL: sidebar at far right */
-  align-items: flex-start;
-  gap: 18px;
-}
-.main-col{ flex: 1; min-width: 0; }
-.page-meta{ flex: 0 0 360px; }
-
-
-
-/* ===== MOBILE: keep SAME desktop layout, just scale the whole canvas (RTL) ===== */
+/* ===== Mobile non-overlap layout (keeps RTL, avoids absolute overlays) ===== */
 @media (max-width: 900px){
-  html, body{
-    overflow-x: auto !important;
-    overflow-y: auto !important;
+  .wrap{max-width:none; padding:12px;}
+  /* Make the right meta area participate in layout instead of overlaying */
+  .page-meta{
+    position: static !important;
+    top:auto !important;
+    right:auto !important;
+    margin: 10px 0 0 0 !important;
+    text-align: right !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
   }
-  /* Keep the original desktop geometry (side-by-side), but scale it down */
-  .wrap{
-    width: 1200px !important;          /* same canvas width used on desktop */
-    max-width: none !important;
-    transform: scale(0.88) !important; /* adjust if you want bigger/smaller */
-    transform-origin: top right !important; /* RTL */
-    margin: 0 !important;
+  /* Keep the control card readable on small screens */
+  .card{
+    max-width: 100% !important;
+    margin: 12px 0 !important;
+  }
+  /* Keep the tree aligned to the right (RTL) and give it breathing room */
+  #treeHost{
+    justify-content: flex-end !important;
+    padding-right: 0 !important;
+  }
+  /* Prevent images inside meta from overflowing */
+  .page-meta img{
+    max-width: 220px !important;
+    height: auto !important;
   }
 }
 
@@ -403,8 +402,6 @@ input[placeholder="اسم الشخص"]{
 
 
 
-
-<div class="layout">
 <div class="page-meta">
   <div>تم تطويره بواسطة: ايهاب عثمان تونجا</div>
   <div>حقوق النسخ محفوظة</div>
@@ -446,9 +443,7 @@ input[placeholder="اسم الشخص"]{
       
    </div>
 
-    
-<div class="main-col">
-<div class="card">
+    <div class="card">
       <div id="status" class="status"></div>
 
       <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
@@ -542,10 +537,7 @@ input[placeholder="اسم الشخص"]{
         </div>
       </div>
     </div>
-  
-</div><!--/main-col-->
-</div><!--/layout-->
-</div>
+  </div>
 
   <script>
     
@@ -1904,46 +1896,5 @@ const blob = pdf.output('blob');
     // Start
     boot();
   </script>
-
-<script>
-/* Mobile = show the same desktop layout by scaling the whole canvas.
-   This avoids "stacking" that breaks the side-by-side layout. */
-(function(){
-  const BASE_W = 1200;   // must match .wrap width above
-  function applyScale(){
-    const wrap = document.querySelector('.wrap');
-    if(!wrap) return;
-
-    const vw = window.innerWidth || document.documentElement.clientWidth;
-    if(vw <= 900){
-      const scale = Math.min(1, vw / BASE_W);
-      wrap.style.transform = 'scale(' + scale + ')';
-
-      // Prevent extra blank space & ensure page can scroll to the bottom
-      const scaledH = Math.ceil(wrap.scrollHeight * scale);
-      document.body.style.height = scaledH + 'px';
-    } else {
-      wrap.style.transform = '';
-      document.body.style.height = '';
-    }
-  }
-  window.addEventListener('load', applyScale, {passive:true});
-  window.addEventListener('resize', applyScale, {passive:true});
-  window.addEventListener('orientationchange', applyScale, {passive:true});
-  applyScale();
-})();
-</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
