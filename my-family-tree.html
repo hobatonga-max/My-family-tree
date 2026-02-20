@@ -502,6 +502,29 @@ input[placeholder="اسم الشخص"]{
   #pageScroll .content{width:max-content;}
   #pageScroll .maincol{width:max-content;}
 
+
+  /* ===== Fix +/− clickability & edge clipping on mobile/Android ===== */
+  #treeHost{
+    padding-left: 44px;   /* room for toggle buttons on the left edge */
+    padding-right: 44px;  /* room on the right edge */
+  }
+
+  /* Place the +/− button INSIDE the circle so it never gets clipped */
+  .toggle{
+    left: 8px !important;
+    top: 8px !important;
+    transform: none !important;
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 18px !important;
+    z-index: 50 !important;
+    touch-action: manipulation;
+  }
+
+  /* Make sure the circle is the stacking context above connector lines */
+  .circleRow{z-index: 10 !important;}
+  .nodeWrap{overflow: visible !important;}
+
 </style>
 </head>
 <body>
