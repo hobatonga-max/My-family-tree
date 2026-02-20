@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>شجرة العائلة</title>
   <style>
 :root{
@@ -309,7 +310,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .taharqa-box img{
-  width:180px;         /* يمكنك تغيير الحجم */
+  width:100px;         /* يمكنك تغيير الحجم */
   border-radius:8px;
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
@@ -323,7 +324,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .family-images img{
-  width:80px;            /* حجم الصورة */
+  width:60px;            /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;
@@ -336,67 +337,93 @@ input[placeholder="اسم الشخص"]{
 }
 
 .hoba-image img{
-  width:85px;               /* حجم الصورة */
+  width:60px;               /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;          /* 0 2px 6px rgba(0,0,0,0.25); */
 }
 
+/* ==============================
+   MOBILE RESPONSIVE FIX
+   ============================== */
 
-
-/* ===== Mobile non-overlap layout (RTL) + correct order ===== */
+/* =====================================
+   MOBILE — KEEP DESKTOP LAYOUT
+   ===================================== */
 @media (max-width: 900px){
 
-  .wrap{
-    max-width:none !important;
-    padding:12px !important;
-
-    outline: none !important;
-    transform: none !important;
-    zoom: 1 !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
+  body{
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .card{
-    order: 1 !important;
-    max-width: 100% !important;
-    margin: 12px 0 !important;
+  /* create desktop-width canvas */
+  .container,
+  .wrapper,
+  .main{
+    min-width: 1100px !important;
   }
 
-  #treeHost{
-    order: 2 !important;
-    justify-content: flex-end !important;
-    padding-right: 0 !important;
+  /* keep UI box fixed */
+  .card, .ui-card{
+    position: absolute !important;
   }
 
+  /* keep right info column fixed */
   .page-meta{
-    order: 3 !important;
-
-    position: static !important;
-    top:auto !important;
-    right:auto !important;
-
-    margin: 10px 0 0 0 !important;
-    text-align: right !important;
-    width: 100% !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
-    gap: 6px !important;
+    position: absolute !important;
   }
 
-  .page-meta img{
-    max-width: 220px !important;
-    height: auto !important;
+  /* prevent images shrinking */
+  img{
+    max-width: none !important;
   }
 }
+
+
+
+/* === Responsive: keep SAME desktop layout on mobile by scaling the whole page canvas === */
+:root{ --uiScale: 1; }
+
+/* Container that holds EVERYTHING (header + sidebar + panel + tree) */
+#viewportScale{
+  /* desktop canvas width (matches .wrap max-width) */
+  width: 980px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* On small screens: scale down the whole canvas from the RIGHT (RTL) */
+@media (max-width: 980px){
+  html, body{ overflow-x: hidden; }
+  #viewportScale{
+    margin: 0;
+    transform: scale(var(--uiScale));
+    transform-origin: top right;
+  }
+}
+
+
+/* === FINAL MOBILE OVERRIDE: force DESKTOP layout, then scale whole canvas === */
+@media (max-width: 900px){
+  /* undo any mobile stacking rules */
+  .wrap{ max-width: 980px !important; }
+  .header{ flex-direction: row !important; text-align: right !important; }
+  .village-wrap{ justify-content: flex-start !important; }
+  .card, .ui-card{
+    position: absolute !important;
+    margin: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+  #treeContainer{ transform: none !important; }
+}
+
 </style>
 </head>
 <body>
+  <div id="viewportScale">
   <div class="wrap">
     <div class="header">
       <div class="logo">🌿</div>
@@ -1386,13 +1413,22 @@ const parentCY = circleRect.top + circleRect.height/2 - wrapRect.top;
       renderTree();
     }
 
-    async function boot(){
-      updateAdminVisibility();
-      clearSelected();
-      const ok = await loadFromJsonIfExists();
-      if (ok) { renderTree(); return; }
-      await loadFromExcelAndSave();
-    }
+    const APP_VERSION = "v2"; // change this when Excel changes
+    async function boot() {
+    const savedVersion = localStorage.getItem("tree_version");
+
+    if (savedVersion !== APP_VERSION) {
+       console.log("Version changed → reload Excel");
+       await loadFromExcelAndSave();
+       localStorage.setItem("tree_version", APP_VERSION);
+       } else {
+        const ok = await loadFromJsonIfExists();
+        if (!ok) await loadFromExcelAndSave();
+             }
+
+       renderTree();
+      }
+
 
     // ---------------------- UI actions ----------------------
     $('searchBtn')?.addEventListener('click', doSearch);
@@ -1913,17 +1949,32 @@ const blob = pdf.output('blob');
     // Start
     boot();
   </script>
+  </div>
+
+<script>
+(function(){
+  const BASE_WIDTH = 980; // must match #viewportScale width
+  function applyScale(){
+    const el = document.getElementById('viewportScale');
+    if(!el) return;
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    const scale = Math.min(1, vw / BASE_WIDTH);
+    document.documentElement.style.setProperty('--uiScale', scale.toFixed(4));
+
+    // Keep the document scroll height correct after scaling
+    requestAnimationFrame(function(){
+      const h = el.getBoundingClientRect().height;
+      // getBoundingClientRect already includes the scale, so no extra multiply
+      document.body.style.height = Math.ceil(h) + 'px';
+    });
+  }
+  window.addEventListener('resize', applyScale, {passive:true});
+  window.addEventListener('orientationchange', applyScale, {passive:true});
+  document.addEventListener('DOMContentLoaded', applyScale);
+  // in case images/excel load later and change height
+  window.addEventListener('load', applyScale);
+})();
+</script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
