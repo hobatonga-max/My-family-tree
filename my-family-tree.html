@@ -400,23 +400,15 @@ input[placeholder="اسم الشخص"]{
   -webkit-overflow-scrolling: touch;
 }
 
-/* Mobile: keep desktop functions but avoid overlaps */
+/* Mobile: stack columns, keep everything readable */
 @media (max-width: 900px){
-  .wrap{max-width: 100%; padding: 12px; overflow-x:hidden;}
-  /* Put main (controls+tree) first, then sidebar content below */
-  .content{flex-direction:column-reverse; gap:14px; align-items:stretch;}
-  .maincol{width:100%;}
-  .sidebar{flex: 0 0 auto; max-width: 100%; width:100%; margin-top: 6px;}
-  .card{max-width: 100%; margin: 0;}
+  .wrap{max-width: 100%; padding: 12px;}
+  .content{flex-direction:column; gap:12px;}
+  .sidebar{flex: 0 0 auto; max-width: 100%; width:100%;}
+  .card{max-width: 100%;}
   .searchInput{min-width: 140px; max-width: 100%;}
-  #treeHost{max-width:100%;}
-
-  /* Make sidebar cards/media fit phone width */
-  .family-card{max-width: 420px; margin: 0 auto;}
-  .family-card img{max-width:100%; height:auto; display:block;}
-  .family-images{justify-content:center; gap:10px;}
+  .family-images{justify-content:flex-start;}
 }
-
 
 </style>
 </head>
