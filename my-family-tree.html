@@ -442,25 +442,37 @@ input[placeholder="اسم الشخص"]{
   .card{max-width:100%; margin:0; padding:10px;}
   .searchInput{min-width:120px; max-width:100%;}
   button.btn{padding:8px 10px; font-size:14px;}
-
-
-  /* Make the left controls box compact & narrow (match reference) */
+  /* Make the left controls box compact & readable (fix wrapping) */
   .maincol{display:flex; flex-direction:column; align-items:flex-start;}
   .card{
-    width:170px;
-    max-width:170px;
+    width:210px;
+    max-width:210px;
     padding:6px 8px;
     border-radius:12px;
-    margin:0;            /* keep it at top-left of left column */
+    margin:0;
   }
-  #status{display:none;} /* hide status line inside the box on mobile */
-  .toolbarRow{margin-top:6px; gap:6px; flex-direction:column; align-items:stretch;}
-  .toolbarRow .btn, .toolbarRow .searchInput{width:100%;}
-  .searchInput{min-width:0; max-width:100%; height:30px; font-size:13px;}
-  button.btn{padding:8px 10px; font-size:13px; line-height:1.2;}
+  #status{display:none;}
+
+  /* Row 1: input + search on one line (reduces height) */
+  .toolbarRow1{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:6px;
+    align-items:center;
+  }
+  .toolbarRow1 .searchInput{width:100%; max-width:100%; min-width:0; height:30px; font-size:13px;}
+  .toolbarRow1 #searchBtn{width:auto; white-space:nowrap; padding:8px 10px; font-size:13px;}
+
+  /* Other buttons stacked, but compact */
+  .toolbarRow2{margin-top:6px; display:flex; flex-direction:column; gap:6px; align-items:stretch;}
+  .toolbarRow2 .btn{width:100%;}
+
+  /* Prevent ugly multi-line label */
+  #adminToggleBtn{white-space:nowrap; font-size:12px; padding:8px 10px;}
 
   /* Bring the tree closer to the top */
   .card{margin-bottom:4px;}
+
 
   /* Tree area: keep nicely centered inside the left column */
   #treeHost{
