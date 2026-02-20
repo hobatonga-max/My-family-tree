@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=1100, initial-scale=1">
   <title>شجرة العائلة</title>
   <style>
 :root{
@@ -344,80 +344,12 @@ input[placeholder="اسم الشخص"]{
 
 
 
-/* =========================
-   RESPONSIVE REBUILD (layout only)
-   Keeps tree/circles logic untouched
-   ========================= */
 
-.wrap{
-  max-width: 1400px;
-}
-
-/* New 2-column layout */
-.content{
-  display:flex;
-  align-items:flex-start;
-  gap: 18px;
-  margin-top: 14px;
-}
-
-/* Sidebar on the right (RTL) */
-.sidebar{
-  flex: 0 0 340px;
-  max-width: 340px;
-}
-
-/* Main column (controls + tree) */
-.maincol{
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* Village title should be in normal flow */
-.village-wrap{
-  position: static !important;
-  top:auto !important;
-  right:auto !important;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap: 14px;
-  direction: rtl;
-  margin-top: 10px;
-}
-
-/* Page meta as sidebar content */
-.page-meta{
-  position: static !important;
-  top:auto !important;
-  right:auto !important;
-  margin-top: 0;
-}
-
-/* Keep tree visible and allow horizontal scroll on small screens */
-#treeHost{
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Mobile: keep desktop functions but avoid overlaps */
+/* Keep desktop layout on mobile (avoid reflow/stacking) */
 @media (max-width: 900px){
-  .wrap{max-width: 100%; padding: 12px; overflow-x:hidden;}
-  /* Put main (controls+tree) first, then sidebar content below */
-  .content{flex-direction:column-reverse; gap:14px; align-items:stretch;}
-  .maincol{width:100%;}
-  .sidebar{flex: 0 0 auto; max-width: 100%; width:100%; margin-top: 6px;}
-  .card{max-width: 100%; margin: 0;}
-  .searchInput{min-width: 140px; max-width: 100%;}
-  #treeHost{max-width:100%;}
-
-  /* Make sidebar cards/media fit phone width */
-  .family-card{max-width: 420px; margin: 0 auto;}
-  .family-card img{max-width:100%; height:auto; display:block;}
-  .family-images{justify-content:center; gap:10px;}
+  body{min-width:1100px; overflow-x:auto;}
+  .wrap{max-width:none; width:1100px;}
 }
-
-
 </style>
 </head>
 <body>
@@ -442,8 +374,7 @@ input[placeholder="اسم الشخص"]{
      </div>
 
 
-<div class="content">
-  <aside class="sidebar">
+
 <div class="page-meta">
   <div>تم تطويره بواسطة: ايهاب عثمان تونجا</div>
   <div>حقوق النسخ محفوظة</div>
@@ -473,9 +404,19 @@ input[placeholder="اسم الشخص"]{
   </div>
 
 </div>
-  </aside>
-  <main class="maincol">
-<div class="card">
+
+
+   <div style="
+      text-align:center;
+      font-size:12px;
+      font-weight:bold;
+      line-height:1.6;
+      margin-right:350px;
+      ">
+      
+   </div>
+
+    <div class="card">
       <div id="status" class="status"></div>
 
       <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
@@ -558,9 +499,6 @@ input[placeholder="اسم الشخص"]{
 </div>
 
     <div id="treeHost" style="margin-top:16px"></div>
-  </main>
-</div>
-
 
     <!-- نافذة تأكيد الحذف -->
     <div id="deleteConfirmModal" style="display:none;position:fixed;inset:0;background:#0006;backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
