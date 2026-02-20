@@ -443,6 +443,18 @@ input[placeholder="اسم الشخص"]{
   .searchInput{min-width:120px; max-width:100%;}
   button.btn{padding:8px 10px; font-size:14px;}
 
+
+  /* Make the left controls box compact (like the reference) */
+  .card{padding:8px; border-radius:12px;}
+  #status{display:none;}                 /* status text sits in header; hide inside the box on mobile */
+  .toolbarRow{margin-top:6px; gap:6px; flex-direction:column; align-items:stretch;}
+  .toolbarRow .btn, .toolbarRow .searchInput{width:100%;}
+  .searchInput{min-width:0; max-width:100%;}
+  button.btn{padding:10px 10px; font-size:14px;}
+
+  /* Bring the tree closer to the top */
+  .card{margin-bottom:6px;}
+
   /* Tree area: keep nicely centered inside the left column */
   #treeHost{
     justify-content:center;
@@ -516,7 +528,7 @@ input[placeholder="اسم الشخص"]{
       <div id="status" class="status"></div>
 
       <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <div class="toolbarRow toolbarRow1">
         <input id="searchInput" class="searchInput" placeholder="بحث بالاسم..." />
         <button id="searchBtn" class="btn">بحث</button>
         <button id="prevMatchBtn" class="btn" style="display:none">السابق</button>
@@ -525,7 +537,7 @@ input[placeholder="اسم الشخص"]{
       </div>
 
       <!-- شريط الأدوات (سطر 2: إدارة + بيانات/تصدير) -->
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <div class="toolbarRow toolbarRow2">
         <button id="adminToggleBtn" class="btn">إدخال/تعديل/حذف</button>
         <button id="adminLogoutBtn" class="btn" style="display:none">خروج المدير</button>
 <button id="demoBtn" class="btn" style="display:none">عرض بيانات تجريبية</button>
