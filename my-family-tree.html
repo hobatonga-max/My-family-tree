@@ -346,22 +346,53 @@ input[placeholder="اسم الشخص"]{
 
 /* ===== Mobile non-overlap layout (RTL) + correct order ===== */
 @media (max-width: 900px){
-  /* Keep the SAME desktop layout on mobile:
-     - no stacking
-     - no re-ordering
-     - allow horizontal scroll if needed */
-  html, body{ overflow-x: auto; }
-  body{ margin: 0; }
 
   .wrap{
-    width: 980px;              /* same as desktop max-width */
-    max-width: none !important;
-    margin: 0;                 /* don't auto-center on tiny screens */
-    padding: 20px;
+    max-width:none !important;
+    padding:12px !important;
+
+    outline: none !important;
+    transform: none !important;
+    zoom: 1 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
   }
 
-  /* Slightly tame large side images so they don't hide UI */
-  .page-meta img{ max-width: 300px; height: auto; }
+  .card{
+    order: 1 !important;
+    max-width: 100% !important;
+    margin: 12px 0 !important;
+  }
+
+  #treeHost{
+    order: 2 !important;
+    justify-content: flex-end !important;
+    padding-right: 0 !important;
+  }
+
+  .page-meta{
+    order: 3 !important;
+
+    position: static !important;
+    top:auto !important;
+    right:auto !important;
+
+    margin: 10px 0 0 0 !important;
+    text-align: right !important;
+    width: 100% !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
+  }
+
+  .page-meta img{
+    max-width: 220px !important;
+    height: auto !important;
+  }
 }
 </style>
 </head>
