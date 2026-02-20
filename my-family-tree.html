@@ -416,7 +416,7 @@ input[placeholder="اسم الشخص"]{
   h1{font-size:20px;}
   .logo{width:42px;height:42px;}
 
-  .wrap{max-width:100%; padding:10px; overflow-x:hidden;}
+  .wrap{max-width:100%; padding:10px; overflow-x:visible;}
 
   .content{
     flex-direction:row;      /* keep 2 columns */
@@ -488,6 +488,14 @@ input[placeholder="اسم الشخص"]{
   .family-images{justify-content:center; gap:10px; margin-right:0;}
   .hoba-image img{display:block; margin:10px auto 0;}
 }
+
+
+  /* Enable horizontal scroll only for the tree (mobile + desktop) */
+  #treeHost{
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
 
 </style>
 </head>
