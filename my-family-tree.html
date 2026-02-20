@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=1100, initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>شجرة العائلة</title>
   <style>
 :root{
@@ -344,11 +344,60 @@ input[placeholder="اسم الشخص"]{
 
 
 
+/* ===== Mobile non-overlap layout (RTL) + correct order ===== */
+.card{
+    order: 1 !important;
+    max-width: 100% !important;
+    margin: 12px 0 !important;
+  }
 
-/* Keep desktop layout on mobile (avoid reflow/stacking) */
+  #treeHost{
+    order: 2 !important;
+    justify-content: flex-end !important;
+    padding-right: 0 !important;
+  }
+
+  .page-meta{
+    order: 3 !important;
+
+    position: static !important;
+    top:auto !important;
+    right:auto !important;
+
+    margin: 10px 0 0 0 !important;
+    text-align: right !important;
+    width: 100% !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
+  }
+
+  .page-meta img{
+    max-width: 220px !important;
+    height: auto !important;
+  }
+}
+
+
+/* ===== Mobile: keep EXACT desktop layout, enable horizontal scroll (no reflow) ===== */
 @media (max-width: 900px){
-  body{min-width:1100px; overflow-x:auto;}
-  .wrap{max-width:none; width:1100px;}
+  html, body{
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Keep the desktop canvas width so nothing stacks/overlaps */
+  .wrap{
+    width: 1200px !important;
+    max-width: none !important;
+    min-width: 1200px !important;
+  }
+  /* Prevent the browser from shrinking text too aggressively */
+  body{
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 }
 </style>
 </head>
@@ -1871,3 +1920,15 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
