@@ -356,6 +356,7 @@ input[placeholder="اسم الشخص"]{
 /* New 2-column layout */
 .content{
   display:flex;
+  flex-direction: row-reverse; /* RTL: sidebar appears on the right */
   align-items:flex-start;
   gap: 18px;
   margin-top: 14px;
@@ -365,6 +366,14 @@ input[placeholder="اسم الشخص"]{
 .sidebar{
   flex: 0 0 340px;
   max-width: 340px;
+}
+
+/* Reduce sidebar images by ~30% (exclude WhatsApp icon) */
+.sidebar img:not(.whatsapp-icon){
+  max-width: 70%;
+  height: auto;
+  display: block;
+  margin-inline: auto;
 }
 
 /* Main column (controls + tree) */
