@@ -419,6 +419,28 @@ input[placeholder="اسم الشخص"]{
     max-width: none !important;
   }
 }
+
+/* ===== Layout columns (desktop + mobile share the same structure) ===== */
+.layout{
+  display: flex;
+  flex-direction: row-reverse; /* RTL: sidebar at far right */
+  align-items: flex-start;
+  gap: 18px;
+}
+.main-col{ flex: 1; min-width: 0; }
+.page-meta{ flex: 0 0 360px; }
+
+@media (max-width: 900px){
+  /* Keep the SAME desktop layout on mobile by scaling the whole canvas */
+  html, body{ overflow-x: auto; }
+  .layout{
+    width: 1200px;                 /* desktop canvas width */
+    transform: scale(0.85);        /* make it fit on phones */
+    transform-origin: top right;   /* RTL: scale from the right edge */
+  }
+  .page-meta{ flex-basis: 320px; }
+  .page-meta img{ max-width: 220px; height: auto; }
+}
 </style>
 </head>
 <body>
@@ -444,6 +466,8 @@ input[placeholder="اسم الشخص"]{
 
 
 
+
+<div class="layout">
 <div class="page-meta">
   <div>تم تطويره بواسطة: ايهاب عثمان تونجا</div>
   <div>حقوق النسخ محفوظة</div>
@@ -485,7 +509,9 @@ input[placeholder="اسم الشخص"]{
       
    </div>
 
-    <div class="card">
+    
+<div class="main-col">
+<div class="card">
       <div id="status" class="status"></div>
 
       <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
@@ -579,7 +605,10 @@ input[placeholder="اسم الشخص"]{
         </div>
       </div>
     </div>
-  </div>
+  
+</div><!--/main-col-->
+</div><!--/layout-->
+</div>
 
   <script>
     
