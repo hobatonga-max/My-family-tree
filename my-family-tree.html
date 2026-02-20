@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
- <meta name="viewport" content="width=1200, initial-scale=0.33, maximum-scale=3, user-scalable=yes">
-
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>شجرة العائلة</title>
   <style>
 :root{
@@ -310,7 +309,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .taharqa-box img{
-  width:100px;         /* يمكنك تغيير الحجم */
+  width:180px;         /* يمكنك تغيير الحجم */
   border-radius:8px;
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
@@ -324,7 +323,7 @@ input[placeholder="اسم الشخص"]{
 }
 
 .family-images img{
-  width:60px;            /* حجم الصورة */
+  width:80px;            /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;
@@ -337,93 +336,51 @@ input[placeholder="اسم الشخص"]{
 }
 
 .hoba-image img{
-  width:60px;               /* حجم الصورة */
+  width:85px;               /* حجم الصورة */
   height:auto;
   border-radius:8px;
   box-shadow:none;          /* 0 2px 6px rgba(0,0,0,0.25); */
 }
 
-/* ==============================
-   MOBILE RESPONSIVE FIX
-   ============================== */
 
-/* =====================================
-   MOBILE — KEEP DESKTOP LAYOUT
-   ===================================== */
+
+/* ===== Mobile non-overlap layout (RTL) + correct order ===== */
+
+
+/* ===== MOBILE: keep desktop layout by scaling the whole desktop canvas (no reflow) ===== */
+
+
+/* ===== Layout columns (desktop + mobile share the same structure) ===== */
+.layout{
+  display: flex;
+  flex-direction: row-reverse; /* RTL: sidebar at far right */
+  align-items: flex-start;
+  gap: 18px;
+}
+.main-col{ flex: 1; min-width: 0; }
+.page-meta{ flex: 0 0 360px; }
+
+
+
+/* ===== MOBILE: keep SAME desktop layout, just scale the whole canvas (RTL) ===== */
 @media (max-width: 900px){
-
-  body{
+  html, body{
     overflow-x: auto !important;
     overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
   }
-
-  /* create desktop-width canvas */
-  .container,
-  .wrapper,
-  .main{
-    min-width: 1100px !important;
-  }
-
-  /* keep UI box fixed */
-  .card, .ui-card{
-    position: absolute !important;
-  }
-
-  /* keep right info column fixed */
-  .page-meta{
-    position: absolute !important;
-  }
-
-  /* prevent images shrinking */
-  img{
+  /* Keep the original desktop geometry (side-by-side), but scale it down */
+  .wrap{
+    width: 1200px !important;          /* same canvas width used on desktop */
     max-width: none !important;
-  }
-}
-
-
-
-/* === Responsive: keep SAME desktop layout on mobile by scaling the whole page canvas === */
-:root{ --uiScale: 1; }
-
-/* Container that holds EVERYTHING (header + sidebar + panel + tree) */
-#viewportScale{
-  /* desktop canvas width (matches .wrap max-width) */
-  width: 980px;
-  max-width: 980px;
-  margin: 0 auto;
-}
-
-/* On small screens: scale down the whole canvas from the RIGHT (RTL) */
-@media (max-width: 980px){
-  html, body{ overflow-x: hidden; }
-  #viewportScale{
-    margin: 0;
-    transform: scale(var(--uiScale));
-    transform-origin: top right;
-  }
-}
-
-
-/* === FINAL MOBILE OVERRIDE: force DESKTOP layout, then scale whole canvas === */
-@media (max-width: 900px){
-  /* undo any mobile stacking rules */
-  .wrap{ max-width: 980px !important; }
-  .header{ flex-direction: row !important; text-align: right !important; }
-  .village-wrap{ justify-content: flex-start !important; }
-  .card, .ui-card{
-    position: absolute !important;
+    transform: scale(0.88) !important; /* adjust if you want bigger/smaller */
+    transform-origin: top right !important; /* RTL */
     margin: 0 !important;
-    width: auto !important;
-    max-width: none !important;
   }
-  #treeContainer{ transform: none !important; }
 }
 
 </style>
 </head>
 <body>
-  <div id="viewportScale">
   <div class="wrap">
     <div class="header">
       <div class="logo">🌿</div>
@@ -446,6 +403,8 @@ input[placeholder="اسم الشخص"]{
 
 
 
+
+<div class="layout">
 <div class="page-meta">
   <div>تم تطويره بواسطة: ايهاب عثمان تونجا</div>
   <div>حقوق النسخ محفوظة</div>
@@ -487,7 +446,9 @@ input[placeholder="اسم الشخص"]{
       
    </div>
 
-    <div class="card">
+    
+<div class="main-col">
+<div class="card">
       <div id="status" class="status"></div>
 
       <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
@@ -581,7 +542,10 @@ input[placeholder="اسم الشخص"]{
         </div>
       </div>
     </div>
-  </div>
+  
+</div><!--/main-col-->
+</div><!--/layout-->
+</div>
 
   <script>
     
@@ -1413,22 +1377,13 @@ const parentCY = circleRect.top + circleRect.height/2 - wrapRect.top;
       renderTree();
     }
 
-    const APP_VERSION = "v2"; // change this when Excel changes
-    async function boot() {
-    const savedVersion = localStorage.getItem("tree_version");
-
-    if (savedVersion !== APP_VERSION) {
-       console.log("Version changed → reload Excel");
-       await loadFromExcelAndSave();
-       localStorage.setItem("tree_version", APP_VERSION);
-       } else {
-        const ok = await loadFromJsonIfExists();
-        if (!ok) await loadFromExcelAndSave();
-             }
-
-       renderTree();
-      }
-
+    async function boot(){
+      updateAdminVisibility();
+      clearSelected();
+      const ok = await loadFromJsonIfExists();
+      if (ok) { renderTree(); return; }
+      await loadFromExcelAndSave();
+    }
 
     // ---------------------- UI actions ----------------------
     $('searchBtn')?.addEventListener('click', doSearch);
@@ -1949,7 +1904,46 @@ const blob = pdf.output('blob');
     // Start
     boot();
   </script>
-  </div>
 
+<script>
+/* Mobile = show the same desktop layout by scaling the whole canvas.
+   This avoids "stacking" that breaks the side-by-side layout. */
+(function(){
+  const BASE_W = 1200;   // must match .wrap width above
+  function applyScale(){
+    const wrap = document.querySelector('.wrap');
+    if(!wrap) return;
+
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    if(vw <= 900){
+      const scale = Math.min(1, vw / BASE_W);
+      wrap.style.transform = 'scale(' + scale + ')';
+
+      // Prevent extra blank space & ensure page can scroll to the bottom
+      const scaledH = Math.ceil(wrap.scrollHeight * scale);
+      document.body.style.height = scaledH + 'px';
+    } else {
+      wrap.style.transform = '';
+      document.body.style.height = '';
+    }
+  }
+  window.addEventListener('load', applyScale, {passive:true});
+  window.addEventListener('resize', applyScale, {passive:true});
+  window.addEventListener('orientationchange', applyScale, {passive:true});
+  applyScale();
+})();
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
