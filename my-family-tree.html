@@ -344,56 +344,39 @@ input[placeholder="اسم الشخص"]{
 
 
 
-/* ===== Mobile non-overlap layout (RTL) + correct order ===== */
+/* ===== Mobile non-overlap layout (keeps RTL, avoids absolute overlays) ===== */
 @media (max-width: 900px){
-
-  .wrap{
-    max-width:none !important;
-    padding:12px !important;
-
-    outline: none !important;
-    transform: none !important;
-    zoom: 1 !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-
-  .card{
-    order: 1 !important;
-    max-width: 100% !important;
-    margin: 12px 0 !important;
-  }
-
-  #treeHost{
-    order: 2 !important;
-    justify-content: flex-end !important;
-    padding-right: 0 !important;
-  }
-
+  .wrap{max-width:none; padding:12px;}
+  /* Make the right meta area participate in layout instead of overlaying */
   .page-meta{
-    order: 3 !important;
-
     position: static !important;
     top:auto !important;
     right:auto !important;
-
     margin: 10px 0 0 0 !important;
     text-align: right !important;
     width: 100% !important;
-
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-end !important;
     gap: 6px !important;
   }
-
+  /* Keep the control card readable on small screens */
+  .card{
+    max-width: 100% !important;
+    margin: 12px 0 !important;
+  }
+  /* Keep the tree aligned to the right (RTL) and give it breathing room */
+  #treeHost{
+    justify-content: flex-end !important;
+    padding-right: 0 !important;
+  }
+  /* Prevent images inside meta from overflowing */
   .page-meta img{
     max-width: 220px !important;
     height: auto !important;
   }
 }
+
 </style>
 </head>
 <body>
@@ -1915,15 +1898,3 @@ const blob = pdf.output('blob');
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
