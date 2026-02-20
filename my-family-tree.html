@@ -416,7 +416,7 @@ input[placeholder="اسم الشخص"]{
   h1{font-size:20px;}
   .logo{width:42px;height:42px;}
 
-  .wrap{max-width:100%; padding:10px; overflow-x:visible;}
+  .wrap{max-width:100%; padding:10px; overflow-x:hidden;}
 
   .content{
     flex-direction:row;      /* keep 2 columns */
@@ -490,11 +490,19 @@ input[placeholder="اسم الشخص"]{
 }
 
 
-  /* Enable horizontal scroll only for the tree (mobile + desktop) */
-  #treeHost{
+  
+  /* Smooth, reliable horizontal scroll for the tree (fix RTL scrollLeft issues) */
+  #treeScroll{
     overflow-x:auto;
     overflow-y:hidden;
     -webkit-overflow-scrolling:touch;
+    direction:ltr;              /* makes scrolling behave normally on mobile */
+    max-width:100%;
+  }
+  #treeHost{
+    display:inline-block;       /* allow content to define scroll width */
+    direction:rtl;              /* keep the tree RTL */
+    min-width:100%;
   }
 
 </style>
@@ -636,7 +644,7 @@ input[placeholder="اسم الشخص"]{
     </div>
 </div>
 
-    <div id="treeHost" style="margin-top:16px"></div>
+    <div id="treeScroll" style="margin-top:16px"><div id="treeHost"></div></div>
   </main>
 </div>
 
