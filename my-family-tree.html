@@ -490,18 +490,23 @@ input[placeholder="اسم الشخص"]{
 }
 
 
-  /* Whole-page horizontal scrolling (needed when tree expands left) */
+  
+  /* Whole-page horizontal scrolling that grows with the tree (reliable on mobile) */
   #pageScroll{
     overflow-x:auto;
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
-    direction:ltr;        /* fixes RTL scroll bugs on mobile */
+    direction:ltr;           /* fixes RTL scroll bugs on mobile */
     width:100%;
     height:100%;
   }
+  /* Make the whole layout size to its content so scroll range keeps expanding */
   #pageScroll .wrap{
-    direction:rtl;        /* keep page content RTL */
-    min-width: 820px;     /* prevents squeezing; enables horizontal scroll */
+    direction:rtl;
+    display:inline-block;
+    width:max-content;       /* grows as the tree grows */
+    min-width:100%;          /* at least fill the viewport */
+    max-width:none;          /* do NOT clamp */
   }
 
 </style>
