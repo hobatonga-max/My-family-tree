@@ -3,7 +3,7 @@
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta name="viewport" content="width=1200">
 <title>شجرة العائلة</title>
 <style>
 :root{
@@ -14,7 +14,7 @@
 }
 
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f8fafc;color:#0f172a;direction:rtl}
-    .wrap{max-width:980px;margin:0 auto;padding:20px}
+    .wrap{max-width:980px;margin:0 auto;padding:20px;position:relative}
     .header{display:flex;align-items:center;gap:12px}
     .logo{width:48px;height:48px;border-radius:9999px;background:#90c290;display:grid;place-items:center;color:#fff;font-weight:700}
     h1{margin:0;font-size:22px}
@@ -346,14 +346,17 @@ input[placeholder="اسم الشخص"]{
 
 
 
-/* ===== Mobile: keep desktop layout by scaling the whole .wrap canvas ===== */
+/* ===============================
+   Mobile: scale whole layout (keep desktop positions)
+   =============================== */
 @media (max-width: 900px){
-  html, body{ overflow-x:hidden; }
-  body{ margin:0; }
+  html,body{width:100%;overflow-x:hidden;}
+  /* keep a fixed design width so everything scales together */
   .wrap{
-    width: 1200px;              /* desktop canvas width */
-    max-width: none !important;
-    transform-origin: top right; /* RTL: scale from the right */
+    width:980px;
+    max-width:none;
+    transform-origin: top right; /* RTL */
+    will-change: transform;
   }
 }
 </style>
@@ -1841,48 +1844,40 @@ const blob = pdf.output('blob');
     // Start
     boot();
   </script>
-
 <script>
 (function(){
   function applyMobileScale(){
     var wrap = document.querySelector('.wrap');
     if(!wrap) return;
 
-    // Only apply on small screens
     var isMobile = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
     if(!isMobile){
       wrap.style.transform = '';
-      wrap.style.webkitTransform = '';
       document.body.style.height = '';
       return;
     }
 
-    var canvasW = 1200; // must match CSS .wrap width above
-    var vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-    var s = Math.min(1, vw / canvasW);
+    // Ensure layout is at design size before measuring
+    wrap.style.transform = '';
+    // Use offsetWidth (design width) and fit to viewport
+    var vw = window.innerWidth || document.documentElement.clientWidth || 360;
+    var w  = wrap.offsetWidth || 980;
+    var scale = vw / w;
 
-    wrap.style.transform = 'scale(' + s + ')';
-    wrap.style.webkitTransform = 'scale(' + s + ')';
+    // Clamp scale to avoid too tiny
+    if(scale > 1) scale = 1;
+    if(scale < 0.25) scale = 0.25;
 
-    // Keep the scaled content scrollable vertically
-    var h = wrap.scrollHeight * s;
-    document.body.style.height = h + 'px';
+    wrap.style.transform = 'scale(' + scale + ')';
+
+    // Reserve vertical space so page can scroll normally
+    var h = wrap.offsetHeight || wrap.scrollHeight || 1000;
+    document.body.style.height = (h * scale) + 'px';
   }
 
-  window.addEventListener('resize', applyMobileScale, {passive:true});
-  window.addEventListener('orientationchange', applyMobileScale, {passive:true});
-
-  // After everything (images/tree) loads, compute again
-  window.addEventListener('load', function(){
-    applyMobileScale();
-    setTimeout(applyMobileScale, 300);
-    setTimeout(applyMobileScale, 1200);
-  });
-
-  // Also try soon after script runs (in case DOM is ready)
-  if(document.readyState === 'complete') applyMobileScale();
-  else document.addEventListener('DOMContentLoaded', applyMobileScale);
+  window.addEventListener('load', applyMobileScale);
+  window.addEventListener('resize', applyMobileScale);
+  window.addEventListener('orientationchange', applyMobileScale);
 })();
-</script>
-</body>
+</script></body>
 </html>
