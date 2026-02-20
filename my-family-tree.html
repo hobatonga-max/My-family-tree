@@ -444,16 +444,23 @@ input[placeholder="اسم الشخص"]{
   button.btn{padding:8px 10px; font-size:14px;}
 
 
-  /* Make the left controls box compact (like the reference) */
-  .card{padding:8px; border-radius:12px;}
-  #status{display:none;}                 /* status text sits in header; hide inside the box on mobile */
+  /* Make the left controls box compact & narrow (match reference) */
+  .maincol{display:flex; flex-direction:column; align-items:flex-start;}
+  .card{
+    width:170px;
+    max-width:170px;
+    padding:6px 8px;
+    border-radius:12px;
+    margin:0;            /* keep it at top-left of left column */
+  }
+  #status{display:none;} /* hide status line inside the box on mobile */
   .toolbarRow{margin-top:6px; gap:6px; flex-direction:column; align-items:stretch;}
   .toolbarRow .btn, .toolbarRow .searchInput{width:100%;}
-  .searchInput{min-width:0; max-width:100%;}
-  button.btn{padding:10px 10px; font-size:14px;}
+  .searchInput{min-width:0; max-width:100%; height:30px; font-size:13px;}
+  button.btn{padding:8px 10px; font-size:13px; line-height:1.2;}
 
   /* Bring the tree closer to the top */
-  .card{margin-bottom:6px;}
+  .card{margin-bottom:4px;}
 
   /* Tree area: keep nicely centered inside the left column */
   #treeHost{
