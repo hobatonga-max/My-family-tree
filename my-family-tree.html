@@ -576,9 +576,33 @@ html, body{
   touch-action: manipulation;
 }
 
+
+/* ===== Reliable indefinite scrolling container (Android Chrome) ===== */
+body{
+  overflow:hidden !important;     /* only #pageScroll scrolls */
+  direction:ltr !important;       /* keep scroll math normal */
+}
+#pageScroll{
+  position:fixed;
+  inset:0;
+  overflow:auto !important;       /* scroll whole page */
+  -webkit-overflow-scrolling:touch;
+  direction:ltr;                  /* key: ltr scroller */
+  touch-action: pan-x pan-y;
+  background: transparent;
+}
+#pageScroll .wrap{
+  direction:rtl !important;       /* content stays RTL */
+  display:inline-block !important;
+  width:max-content !important;
+  min-width:100% !important;
+  max-width:none !important;
+}
+
 </style>
 </head>
 <body>
+  <div id="pageScroll">
   <div class="wrap">
     <div class="header">
       <div class="logo">🌿</div>
@@ -2089,5 +2113,6 @@ const blob = pdf.output('blob');
     // Start
     boot();
   </script>
+  </div>
 </body>
 </html>
