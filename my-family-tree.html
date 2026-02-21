@@ -503,18 +503,21 @@ input[placeholder="اسم الشخص"]{
   #pageScroll .maincol{width:max-content;}
 
 
-  /* Keep original + outside circles, but prevent clipping near page edges */
+  
+  /* ===== Android mobile: keep +/− clickable after deep expansions (without moving it inside) ===== */
   #treeHost{
-    padding-left: 52px;   /* room for the toggle on the left side */
-    padding-right: 28px;  /* a bit of room on the right side */
+    padding-left: 120px;  /* big safe area so the outside toggle never gets clipped */
+    padding-right: 60px;  /* safe area on the other side */
   }
   .toggle{
-    width: 28px;
-    height: 28px;
-    font-size: 18px;
-    z-index: 20;
+    left: -22px;          /* still outside */
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+    z-index: 9999;        /* always on top */
     touch-action: manipulation;
   }
+  .circle{overflow: visible;}
   .nodeWrap{overflow: visible;}
 
 </style>
