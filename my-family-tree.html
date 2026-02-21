@@ -793,7 +793,48 @@
       padding-left: 170px !important;
       padding-right: 90px !important;
     }
-  </style>
+  
+/* ===== Layout nudge: align content to the RIGHT like the mobile reference screenshot ===== */
+#pageScroll{
+  display:flex !important;
+  justify-content:flex-end !important; /* push the whole page content to the right edge */
+  align-items:flex-start;
+}
+
+/* Header + village area: keep them closer to the right */
+@media (max-width: 900px){
+  .wrap{
+    margin-right: 0 !important;
+    margin-left: auto !important;
+  }
+  .header{
+    justify-content:flex-end;
+  }
+  .village-wrap{
+    position: static !important;     /* no absolute centering on mobile */
+    justify-content:flex-end;
+    gap: 14px !important;
+    margin: 10px 10px 0 10px;
+  }
+  /* Sidebar meta: stay in normal flow and hug the right */
+  .sidebar{
+    flex: 0 0 320px !important;
+    max-width: 320px !important;
+  }
+  .page-meta{
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    margin: 0 10px 0 0;
+    text-align: right !important;
+  }
+  .taharqa-box, .family-images, .hoba-image{
+    justify-content:flex-end !important;
+    text-align:right !important;
+  }
+}
+
+</style>
 </head>
 
 <body>
