@@ -525,6 +525,57 @@ input[placeholder="اسم الشخص"]{
     font-size: 20px;
   }
 
+
+/* ===== Indefinite expansion + scrolling (Android Chrome friendly) ===== */
+html, body{
+  height:auto !important;
+  overflow-x:auto !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  direction:ltr;                 /* stable horizontal scroll on Android */
+  touch-action: pan-x pan-y;
+}
+
+/* Keep content RTL, but allow it to grow with its content (no clamps) */
+.wrap{
+  direction:rtl !important;
+  display:inline-block !important;
+  width:max-content !important;  /* grows as tree grows */
+  min-width:100% !important;
+  max-width:none !important;     /* override any max-width like 980px */
+  padding-left:140px !important; /* safe gutter so + (outside) never clips */
+  padding-right:80px !important;
+}
+
+/* Prevent flex containers from squeezing the tree width */
+.content{
+  display:inline-flex !important;
+  width:max-content !important;
+  align-items:flex-start;
+}
+
+/* Let the main column (tree side) grow naturally */
+.maincol{
+  width:max-content !important;
+  min-width:0 !important;
+}
+
+/* Tree host should define width by its content */
+#treeHost{
+  display:inline-block !important;
+  width:max-content !important;
+  min-width:100% !important;
+}
+
+/* Make +/− easier to tap (still outside) */
+.toggle{
+  z-index:9999 !important;
+  width:32px !important;
+  height:32px !important;
+  font-size:20px !important;
+  touch-action: manipulation;
+}
+
 </style>
 </head>
 <body>
