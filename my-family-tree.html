@@ -56,15 +56,6 @@
       color: #334155
     }
 
-    /* Smaller admin panel card */
-    .card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 8px 10px;
-      max-width: 820px;
-      margin: 0 auto
-    }
 
     .status {
       white-space: pre-line;
@@ -386,8 +377,9 @@
     /* ===== STEP 2 (STRICT): ONLY resize white box + "ط§ط³ظ… ط§ظ„ط´ط®طµ" field ===== */
     .card {
       max-width: 320px !important;
+      min-width: 310px !important;
+      width: fit-content !important;
       margin: 12px auto !important;
-      width: 95% !important;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
       display: block !important;
       padding: 12px !important;
@@ -724,8 +716,7 @@
     body {
       overflow: hidden !important;
       /* only #pageScroll scrolls */
-      direction: ltr !important;
-      /* keep scroll math normal */
+      direction: rtl !important;
     }
 
     #pageScroll {
@@ -734,8 +725,7 @@
       overflow: auto !important;
       /* scroll whole page */
       -webkit-overflow-scrolling: touch;
-      direction: rtl;
-      /* key: rtl scroller starts at the right edge */
+      direction: rtl !important;
       touch-action: pan-x pan-y;
       background: transparent;
     }
