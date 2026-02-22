@@ -586,13 +586,13 @@
 
     /* Sidebar on the right (RTL) */
     .sidebar {
-      flex: 0 0 160px;
-      max-width: 160px;
+      flex: 0 0 320px;
+      max-width: 320px;
       position: relative;
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
-      /* Left in RTL, closer to tree */
+      align-items: flex-start;
+      /* Right in RTL */
     }
 
     /* Main column (controls + tree) */
@@ -601,8 +601,7 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      /* Right in RTL, closer to sidebar */
+      align-items: stretch;
     }
 
     /* Village title should be in normal flow */
@@ -828,6 +827,61 @@
       <div class="content">
         <aside class="sidebar">
           <div class="page-meta">
+
+            <!-- Migration of card from maincol to sidebar -->
+            <div class="card">
+              <div id="status" class="status"></div>
+
+              <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
+              <div class="toolbarRow toolbarRow1">
+                <input id="searchInput" class="searchInput" placeholder="بحث بالاسم..." />
+                <button id="searchBtn" class="btn">بحث</button>
+                <button id="prevMatchBtn" class="btn" style="display:none">السابق</button>
+                <button id="nextMatchBtn" class="btn" style="display:none">التالي</button>
+                <button id="printBtn" class="btn">طباعة</button>
+              </div>
+
+              <!-- شريط الأدوات (سطر 2: إدارة + بيانات/تصدير) -->
+              <div class="toolbarRow toolbarRow2">
+                <button id="adminToggleBtn" class="btn">إدخال/تعديل/حذف</button>
+                <button id="adminLogoutBtn" class="btn" style="display:none">خروج المدير</button>
+                <button id="demoBtn" class="btn" style="display:none">عرض بيانات تجريبية</button>
+                <button id="resetBtn" class="btn" style="display:none">إعادة ضبط من Excel</button>
+                <button id="exportBtn" class="btn" style="display:none">تصدير JSON</button>
+                <button id="exportExcelBtn" class="btn" style="display:none">تصدير إلى Excel</button>
+              </div>
+
+              <!-- Admin box (hidden until admin unlock) -->
+              <div id="adminBox" style="margin-top:12px;border-top:1px dashed #e2e8f0;padding-top:12px;display:none">
+                <div id="selectedInfo" style="font-size:12px;color:#000;font-weight:700">اختر شخصًا بالنقر على دائرته
+                  ليصبح "المحدد".</div>
+
+                <div style="margin-top:10px;">
+                  <div style="font-size:12px;color:#000;margin-bottom:4px;font-weight:700">الاسم</div>
+                  <input id="nameInput" class="input" placeholder="اسم الشخص" />
+                  <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button id="addChildBtn" class="btn">إضافة ابن/ابنة للمحدد</button>
+                    <button id="renameBtn" class="btn">تعديل اسم المحدد</button>
+                    <button id="deleteBtn" class="btn">حذف المحدد</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="taharqa-box">
+              <img src="images/Tehraga-pic1.png" alt="الملك تهراقا">
+            </div>
+
+            <div class="family-images">
+              <img src="images/Abdullah.png" alt="Abdullah">
+              <img src="images/Halima.png" alt="Halima">
+            </div>
+
+            <div class="hoba-image">
+              <img src="images/Hoba.png" alt="Hoba">
+            </div>
+
+            <!-- Developer credits moved here below images -->
             <div class="dev-credit">
               <div>تم تطويره بواسطة:</div>
               <div>ايهاب عثمان تونجا</div>
@@ -843,63 +897,12 @@
               <span class="whatsapp-text">تواصل عبر واتساب</span>
             </a>
 
-            <div class="taharqa-box">
-              <img src="images/Tehraga-pic1.png" alt="الملك تهراقا">
-            </div>
-
-            <div class="family-images">
-              <img src="images/Abdullah.png" alt="Abdullah">
-              <img src="images/Halima.png" alt="Halima">
-            </div>
-
-            <div class="hoba-image">
-              <img src="images/Hoba.png" alt="Hoba">
-            </div>
-
           </div>
         </aside>
 
         <main class="maincol">
-          <div class="card">
-            <div id="status" class="status"></div>
+          <!-- Card migrated to sidebar -->
 
-            <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
-            <div class="toolbarRow toolbarRow1">
-              <input id="searchInput" class="searchInput" placeholder="بحث بالاسم..." />
-              <button id="searchBtn" class="btn">بحث</button>
-              <button id="prevMatchBtn" class="btn" style="display:none">السابق</button>
-              <button id="nextMatchBtn" class="btn" style="display:none">التالي</button>
-              <button id="printBtn" class="btn">طباعة</button>
-            </div>
-
-            <!-- شريط الأدوات (سطر 2: إدارة + بيانات/تصدير) -->
-            <div class="toolbarRow toolbarRow2">
-              <button id="adminToggleBtn" class="btn">إدخال/تعديل/حذف</button>
-              <button id="adminLogoutBtn" class="btn" style="display:none">خروج المدير</button>
-              <button id="demoBtn" class="btn" style="display:none">عرض بيانات تجريبية</button>
-              <button id="resetBtn" class="btn" style="display:none">إعادة ضبط من Excel</button>
-              <button id="exportBtn" class="btn" style="display:none">تصدير JSON</button>
-              <button id="exportExcelBtn" class="btn" style="display:none">تصدير إلى Excel</button>
-            </div>
-
-            <!-- Admin box (hidden until admin unlock) -->
-            <div id="adminBox" style="margin-top:12px;border-top:1px dashed #e2e8f0;padding-top:12px;display:none">
-              <div id="selectedInfo" style="font-size:12px;color:#000;font-weight:700">اختر شخصًا بالنقر على دائرته
-                ليصبح "المحدد".</div>
-
-              <div style="margin-top:10px;">
-                <div style="font-size:12px;color:#000;margin-bottom:4px;font-weight:700">الاسم</div>
-                <input id="nameInput" class="input" placeholder="اسم الشخص" />
-                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-                  <button id="addChildBtn" class="btn">إضافة ابن/ابنة للمحدد</button>
-                  <button id="renameBtn" class="btn">تعديل اسم المحدد</button>
-                  <button id="deleteBtn" class="btn">حذف المحدد</button>
-                </div>
-                <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Admin login modal -->
           <div id="adminModal"
