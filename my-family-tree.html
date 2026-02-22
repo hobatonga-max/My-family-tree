@@ -425,10 +425,9 @@
 
     /* ===== STEP: Move white box slightly LEFT (same size) ===== */
     .card {
-      margin-right: 10px !important;
-      /* move box left a bit */
-      margin-left: auto !important;
+      margin-right: 0px !important;
       /* keep right-anchored behavior */
+      margin-left: auto !important;
     }
 
     .page-meta {
@@ -580,7 +579,7 @@
     .content {
       display: flex;
       align-items: flex-start;
-      gap: 18px;
+      gap: 6px;
       margin-top: 14px;
     }
 
@@ -629,9 +628,9 @@
 
     /* Keep original + outside circles, but prevent clipping near page edges */
     #treeHost {
-      padding-left: 52px;
+      padding-left: 20px;
       /* room for the toggle on the left side */
-      padding-right: 10px;
+      padding-right: 0px;
       /* a bit of room on the right side */
     }
 
@@ -808,19 +807,19 @@
 
       <div class="village-wrap">
 
-        <div class="village-box">
-          قرية سالي - دنقلا
-        </div>
-
         <div class="version-outside">
           🌹الاصدارة الثانية 🌹
+        </div>
+
+        <div class="village-box">
+          قرية سالي - دنقلا
         </div>
 
       </div>
 
 
       <div class="content">
-        <aside class="sidebar">
+        <main class="maincol">
           <div class="page-meta">
             <div class="dev-credit">
               <div>تم تطويره بواسطة:</div>
@@ -851,102 +850,103 @@
             </div>
 
           </div>
-        </aside>
-        <main class="maincol">
-          <div class="card">
-            <div id="status" class="status"></div>
+          </aside>
+          <aside class="sidebar">
+            <div class="card">
+              <div id="status" class="status"></div>
 
-            <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
-            <div class="toolbarRow toolbarRow1">
-              <input id="searchInput" class="searchInput" placeholder="بحث بالاسم..." />
-              <button id="searchBtn" class="btn">بحث</button>
-              <button id="prevMatchBtn" class="btn" style="display:none">السابق</button>
-              <button id="nextMatchBtn" class="btn" style="display:none">التالي</button>
-              <button id="printBtn" class="btn">طباعة</button>
-            </div>
+              <!-- شريط الأدوات (سطر 1: بحث + طباعة) -->
+              <div class="toolbarRow toolbarRow1">
+                <input id="searchInput" class="searchInput" placeholder="بحث بالاسم..." />
+                <button id="searchBtn" class="btn">بحث</button>
+                <button id="prevMatchBtn" class="btn" style="display:none">السابق</button>
+                <button id="nextMatchBtn" class="btn" style="display:none">التالي</button>
+                <button id="printBtn" class="btn">طباعة</button>
+              </div>
 
-            <!-- شريط الأدوات (سطر 2: إدارة + بيانات/تصدير) -->
-            <div class="toolbarRow toolbarRow2">
-              <button id="adminToggleBtn" class="btn">إدخال/تعديل/حذف</button>
-              <button id="adminLogoutBtn" class="btn" style="display:none">خروج المدير</button>
-              <button id="demoBtn" class="btn" style="display:none">عرض بيانات تجريبية</button>
-              <button id="resetBtn" class="btn" style="display:none">إعادة ضبط من Excel</button>
-              <button id="exportBtn" class="btn" style="display:none">تصدير JSON</button>
-              <button id="exportExcelBtn" class="btn" style="display:none">تصدير إلى Excel</button>
-            </div>
+              <!-- شريط الأدوات (سطر 2: إدارة + بيانات/تصدير) -->
+              <div class="toolbarRow toolbarRow2">
+                <button id="adminToggleBtn" class="btn">إدخال/تعديل/حذف</button>
+                <button id="adminLogoutBtn" class="btn" style="display:none">خروج المدير</button>
+                <button id="demoBtn" class="btn" style="display:none">عرض بيانات تجريبية</button>
+                <button id="resetBtn" class="btn" style="display:none">إعادة ضبط من Excel</button>
+                <button id="exportBtn" class="btn" style="display:none">تصدير JSON</button>
+                <button id="exportExcelBtn" class="btn" style="display:none">تصدير إلى Excel</button>
+              </div>
 
-            <!-- Admin box (hidden until admin unlock) -->
-            <div id="adminBox" style="margin-top:12px;border-top:1px dashed #e2e8f0;padding-top:12px;display:none">
-              <div id="selectedInfo" style="font-size:12px;color:#000;font-weight:700">اختر شخصًا بالنقر على دائرته
-                ليصبح "المحدد".</div>
+              <!-- Admin box (hidden until admin unlock) -->
+              <div id="adminBox" style="margin-top:12px;border-top:1px dashed #e2e8f0;padding-top:12px;display:none">
+                <div id="selectedInfo" style="font-size:12px;color:#000;font-weight:700">اختر شخصًا بالنقر على دائرته
+                  ليصبح "المحدد".</div>
 
-              <div style="margin-top:10px;">
-                <div style="font-size:12px;color:#000;margin-bottom:4px;font-weight:700">الاسم</div>
-                <input id="nameInput" class="input" placeholder="اسم الشخص" />
-                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-                  <button id="addChildBtn" class="btn">إضافة ابن/ابنة للمحدد</button>
-                  <button id="renameBtn" class="btn">تعديل اسم المحدد</button>
-                  <button id="deleteBtn" class="btn">حذف المحدد</button>
+                <div style="margin-top:10px;">
+                  <div style="font-size:12px;color:#000;margin-bottom:4px;font-weight:700">الاسم</div>
+                  <input id="nameInput" class="input" placeholder="اسم الشخص" />
+                  <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button id="addChildBtn" class="btn">إضافة ابن/ابنة للمحدد</button>
+                    <button id="renameBtn" class="btn">تعديل اسم المحدد</button>
+                    <button id="deleteBtn" class="btn">حذف المحدد</button>
+                  </div>
+                  <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                  </div>
                 </div>
-                <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Admin login modal -->
-          <div id="adminModal"
-            style="display:none;position:fixed;inset:0;background:#0006;backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
-            <div
-              style="background:#fff;padding:16px 20px;border-radius:12px;min-width:260px;max-width:360px;text-align:center;box-shadow:0 10px 30px rgba(15,23,42,.25);">
-              <div style="font-size:15px;margin-bottom:10px;color:#0f172a;font-weight:700;">دخول المدير</div>
-              <div style="font-size:12px;color:#475569;margin-bottom:10px;">أدخل الرمز السري لإظهار أدوات
-                الإدخال/التعديل/الحذف</div>
-              <input id="adminPinInput" class="input" type="password" autocomplete="off" placeholder="الرمز السري"
-                style="max-width:240px;margin:0 auto;" />
-
-              <div
-                style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:240px;margin-inline:auto;">
-                <label
-                  style="display:flex;align-items:center;gap:6px;font-size:12px;color:#334155;font-weight:700;cursor:pointer;user-select:none;">
-                  <input id="adminShowPin" type="checkbox" style="width:16px;height:16px;cursor:pointer" />
-                  إظهار الرمز
-                </label>
-                <button id="forgotPinBtn" class="btn" style="padding:4px 8px;font-size:12px;">نسيت الرمز؟</button>
-              </div>
-              <div id="adminPinError" style="display:none;margin-top:8px;font-size:12px;color:#b91c1c;">رمز غير صحيح
-              </div>
-              <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;">
-                <button id="adminPinOk" class="btn" style="min-width:90px;">دخول</button>
-                <button id="adminPinCancel" class="btn" style="min-width:90px;">إلغاء</button>
               </div>
             </div>
 
-            <!-- Forgot PIN modal (opens email client to contact admin) -->
-            <div id="forgotPinModal"
+            <!-- Admin login modal -->
+            <div id="adminModal"
               style="display:none;position:fixed;inset:0;background:#0006;backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
               <div
-                style="background:#fff;padding:16px 20px;border-radius:12px;min-width:280px;max-width:420px;text-align:center;box-shadow:0 10px 30px rgba(15,23,42,.25);">
-                <div style="font-size:15px;margin-bottom:10px;color:#0f172a;font-weight:700;">استعادة الرمز السري</div>
-                <div style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.5;">
-                  أدخل بريدك الإلكتروني وسيتم فتح رسالة جاهزة لإرسالها إلى المدير.
-                </div>
-                <input id="forgotEmailInput" class="input" type="email" autocomplete="off"
-                  placeholder="example@email.com" style="max-width:280px;margin:0 auto;" />
-                <div id="forgotEmailError" style="display:none;margin-top:8px;font-size:12px;color:#b91c1c;"></div>
+                style="background:#fff;padding:16px 20px;border-radius:12px;min-width:260px;max-width:360px;text-align:center;box-shadow:0 10px 30px rgba(15,23,42,.25);">
+                <div style="font-size:15px;margin-bottom:10px;color:#0f172a;font-weight:700;">دخول المدير</div>
+                <div style="font-size:12px;color:#475569;margin-bottom:10px;">أدخل الرمز السري لإظهار أدوات
+                  الإدخال/التعديل/الحذف</div>
+                <input id="adminPinInput" class="input" type="password" autocomplete="off" placeholder="الرمز السري"
+                  style="max-width:240px;margin:0 auto;" />
 
-                <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
-                  <button id="forgotSendBtn" class="btn" style="min-width:130px;">إرسال للمدير</button>
-                  <button id="forgotCancelBtn" class="btn" style="min-width:90px;">إلغاء</button>
+                <div
+                  style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:240px;margin-inline:auto;">
+                  <label
+                    style="display:flex;align-items:center;gap:6px;font-size:12px;color:#334155;font-weight:700;cursor:pointer;user-select:none;">
+                    <input id="adminShowPin" type="checkbox" style="width:16px;height:16px;cursor:pointer" />
+                    إظهار الرمز
+                  </label>
+                  <button id="forgotPinBtn" class="btn" style="padding:4px 8px;font-size:12px;">نسيت الرمز؟</button>
                 </div>
-                <div style="margin-top:10px;font-size:12px;color:#64748b;line-height:1.5;">
-                  ملاحظة: لا يمكن إرسال البريد تلقائيًا من هذا الملف. سيتم فتح تطبيق البريد لديك لإرسال الرسالة.
+                <div id="adminPinError" style="display:none;margin-top:8px;font-size:12px;color:#b91c1c;">رمز غير صحيح
+                </div>
+                <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;">
+                  <button id="adminPinOk" class="btn" style="min-width:90px;">دخول</button>
+                  <button id="adminPinCancel" class="btn" style="min-width:90px;">إلغاء</button>
+                </div>
+              </div>
+
+              <!-- Forgot PIN modal (opens email client to contact admin) -->
+              <div id="forgotPinModal"
+                style="display:none;position:fixed;inset:0;background:#0006;backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
+                <div
+                  style="background:#fff;padding:16px 20px;border-radius:12px;min-width:280px;max-width:420px;text-align:center;box-shadow:0 10px 30px rgba(15,23,42,.25);">
+                  <div style="font-size:15px;margin-bottom:10px;color:#0f172a;font-weight:700;">استعادة الرمز السري
+                  </div>
+                  <div style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.5;">
+                    أدخل بريدك الإلكتروني وسيتم فتح رسالة جاهزة لإرسالها إلى المدير.
+                  </div>
+                  <input id="forgotEmailInput" class="input" type="email" autocomplete="off"
+                    placeholder="example@email.com" style="max-width:280px;margin:0 auto;" />
+                  <div id="forgotEmailError" style="display:none;margin-top:8px;font-size:12px;color:#b91c1c;"></div>
+
+                  <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+                    <button id="forgotSendBtn" class="btn" style="min-width:130px;">إرسال للمدير</button>
+                    <button id="forgotCancelBtn" class="btn" style="min-width:90px;">إلغاء</button>
+                  </div>
+                  <div style="margin-top:10px;font-size:12px;color:#64748b;line-height:1.5;">
+                    ملاحظة: لا يمكن إرسال البريد تلقائيًا من هذا الملف. سيتم فتح تطبيق البريد لديك لإرسال الرسالة.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div id="treeHost" style="margin-top:16px"></div>
+            <div id="treeHost" style="margin-top:16px"></div>
         </main>
       </div>
 
