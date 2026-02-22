@@ -579,21 +579,30 @@
     .content {
       display: flex;
       align-items: flex-start;
+      justify-content: flex-start;
       gap: 0;
       margin-top: 14px;
     }
 
     /* Sidebar on the right (RTL) */
     .sidebar {
-      flex: 0 0 340px;
-      max-width: 340px;
+      flex: 0 0 160px;
+      max-width: 160px;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      /* Left in RTL, closer to tree */
     }
 
     /* Main column (controls + tree) */
     .maincol {
       flex: 1 1 auto;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      /* Right in RTL, closer to sidebar */
     }
 
     /* Village title should be in normal flow */
@@ -604,7 +613,7 @@
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      gap: 14px;
+      gap: 8px;
       direction: rtl;
       margin-top: 10px;
     }
@@ -629,10 +638,9 @@
 
     /* Keep original + outside circles, but prevent clipping near page edges */
     #treeHost {
+      padding-inline-start: 0;
       padding-left: 20px;
-      /* room for the toggle on the left side */
       padding-right: 0px;
-      /* a bit of room on the right side */
     }
 
     .toggle {
