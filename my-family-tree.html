@@ -8848,6 +8848,11 @@ $ / i.test(email);
       );
 
 
+
+
+
+
+
       // ---------------------- Tests ----------------------
 
 
@@ -8863,6 +8868,11 @@ $ / i.test(email);
         console.assert(deriveParent('1') === null, 'deriveParent 2');
 
 
+
+
+
+
+
         const roots = computeRoots([{ id: '1', name: 'a' }
           , { id: '1.1', name: 'b' }
           , { id: '2', name: 'c' }
@@ -8871,6 +8881,11 @@ $ / i.test(email);
 
 
         console.assert(roots.length === 2 && roots[0] === '1' && roots[1] === '2', 'roots order');
+
+
+
+
+
 
 
         console.assert(typeof ADMIN_PIN_HASH === 'string' && ADMIN_PIN_HASH.length === 64, 'ADMIN_PIN_HASH length');
@@ -8884,6 +8899,11 @@ $ / i.test(email);
         console.assert(ADMIN_LOCK_SECONDS === 15, 'ADMIN_LOCK_SECONDS');
 
 
+
+
+
+
+
         console.assert(typeof window.open === 'function', 'window.open exists');
 
 
@@ -8891,16 +8911,37 @@ $ / i.test(email);
       }
       )();
 
+
+
+
+
+
+
       // Start
 
 
 
       boot();
 
+
+
     </script>
+
+
+
 
   </div>
 
+
+
+
 </body>
+
+
+
+
+
+
+
 
 </html>
