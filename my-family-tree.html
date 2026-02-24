@@ -1132,6 +1132,7 @@
           }
         } catch { }
         try { localStorage.setItem(STORAGE_KEY, jsonString); } catch { }
+        setStatus('⚠️ تم حفظ التغييرات محلياً. لمزامنتها مع باقي الأجهزة، يرجى تصدير البيانات إلى Excel واستبدال ملف Dropbox الأصلي.');
       }
 
       function storageClear() {
@@ -1227,13 +1228,13 @@
 
       // ---------------------- Parse & Normalize ----------------------
 
-    function pickHeaders(rows){
-      if (!rows.length) return { idKey: 'كود', nameKey: 'الاسم' };
-      const keys = Object.keys(rows[0] || {});
-      const idKey = keys.includes('كود') ? 'كود' : (keys[0] || 'كود');
-          const nameKey = keys.includes('الاسم') ? 'الاسم' : (keys[1] || 'الاسم');
-          return { idKey, nameKey };
-    }
+      function pickHeaders(rows) {
+        if (!rows.length) return { idKey: 'كود', nameKey: 'الاسم' };
+        const keys = Object.keys(rows[0] || {});
+        const idKey = keys.includes('كود') ? 'كود' : (keys[0] || 'كود');
+        const nameKey = keys.includes('الاسم') ? 'الاسم' : (keys[1] || 'الاسم');
+        return { idKey, nameKey };
+      }
 
 
       function normalizePeople(people) {
@@ -1615,48 +1616,48 @@
 
       }
 
-      async function loadFromExcelAndSave(){
-                     setStatus('⏳ تحميل مكتبة XLSX...');
-                    await ensureXlsxLib();
+      async function loadFromExcelAndSave() {
+        setStatus('⏳ تحميل مكتبة XLSX...');
+        await ensureXlsxLib();
 
-                    setStatus('⏳ تحميل ملف Excel تلقائيًا...');
-                   const loaded = await loadExcelBytes();
-                   const rb = $('retryBtn');
+        setStatus('⏳ تحميل ملف Excel تلقائيًا...');
+        const loaded = await loadExcelBytes();
+        const rb = $('retryBtn');
 
-                  if (!loaded){
-                         setStatus(`⚠️ لم أستطع تحميل ${XLSX_FILENAME}.\nسيتم استخدام بيانات تجريبية.`);
-                         if (rb) rb.style.display = 'inline-block';
-                         appState.people = normalizePeople([
-                                 {id:'1', name:'الجد'},
-                                 {id:'1.1', name:'الابن 1'},
-                                {id:'1.2', name:'الابن 2'},
-                                {id:'1.1.1', name:'الحفيد 1'},
-                                {id:'2', name:'فرع آخر'}
-                          ]);
-                      appState.rootId = '1';
-                     appState.expanded = new Set(['1']);
-                     persist();
-                     renderTree();
-                    return;
-                  }
+        if (!loaded) {
+          setStatus(`⚠️ لم أستطع تحميل ${XLSX_FILENAME}.\nسيتم استخدام بيانات تجريبية.`);
+          if (rb) rb.style.display = 'inline-block';
+          appState.people = normalizePeople([
+            { id: '1', name: 'الجد' },
+            { id: '1.1', name: 'الابن 1' },
+            { id: '1.2', name: 'الابن 2' },
+            { id: '1.1.1', name: 'الحفيد 1' },
+            { id: '2', name: 'فرع آخر' }
+          ]);
+          appState.rootId = '1';
+          appState.expanded = new Set(['1']);
+          persist();
+          renderTree();
+          return;
+        }
 
 
-   try {
-        const people = parsePeopleFromXlsxBytes(loaded.bytes);
-        const roots = computeRoots(people);
-        const rootId = roots.length ? roots[0] : people[0].id;
-        appState.people = people;
-        appState.rootId = rootId;
-        appState.expanded = new Set([rootId]);
-        persist();
-        setStatus(`✅ تم تحميل Excel (${loaded.source}) وتحويله إلى JSON وحفظه.`);
-        if (rb) rb.style.display = 'none';
-        renderTree();
-      } catch (e){
-        setStatus(`⚠️ تم تحميل Excel لكن فشل تحليله.\nالسبب: ${String(e?.message || e)}\nسيتم استخدام بيانات تجريبية.`);
-        if (rb) rb.style.display = 'inline-block';
+        try {
+          const people = parsePeopleFromXlsxBytes(loaded.bytes);
+          const roots = computeRoots(people);
+          const rootId = roots.length ? roots[0] : people[0].id;
+          appState.people = people;
+          appState.rootId = rootId;
+          appState.expanded = new Set([rootId]);
+          persist();
+          setStatus(`✅ تم تحميل Excel (${loaded.source}) وتحويله إلى JSON وحفظه.`);
+          if (rb) rb.style.display = 'none';
+          renderTree();
+        } catch (e) {
+          setStatus(`⚠️ تم تحميل Excel لكن فشل تحليله.\nالسبب: ${String(e?.message || e)}\nسيتم استخدام بيانات تجريبية.`);
+          if (rb) rb.style.display = 'inline-block';
+        }
       }
-    }
 
 
       function expandAncestors(id, parentOf) {
@@ -1669,26 +1670,26 @@
         }
       }
 
-     function normalizeText(s){
-      return String(s || '')
-        // remove tatweel
-        .replace(/\u0640/g, '')
-        // remove Arabic diacritics (tashkeel)
-        .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
-        // normalize Alef forms: أ إ آ ٱ -> ا
-        .replace(/[أإآٱ]/g, 'ا')
-        // normalize Ya/Alef Maqsura: ى -> ي
-        .replace(/ى/g, 'ي')
-        // normalize Ta Marbuta: ة -> ه
-        .replace(/ة/g, 'ه')
-        // optional hamza normalizations
-        .replace(/ؤ/g, 'و')
-        .replace(/ئ/g, 'ي')
-        // normalize whitespace
-        .replace(/\s+/g, ' ')
-        .trim()
-        .toLowerCase();
-    }
+      function normalizeText(s) {
+        return String(s || '')
+          // remove tatweel
+          .replace(/\u0640/g, '')
+          // remove Arabic diacritics (tashkeel)
+          .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+          // normalize Alef forms: أ إ آ ٱ -> ا
+          .replace(/[أإآٱ]/g, 'ا')
+          // normalize Ya/Alef Maqsura: ى -> ي
+          .replace(/ى/g, 'ي')
+          // normalize Ta Marbuta: ة -> ه
+          .replace(/ة/g, 'ه')
+          // optional hamza normalizations
+          .replace(/ؤ/g, 'و')
+          .replace(/ئ/g, 'ي')
+          // normalize whitespace
+          .replace(/\s+/g, ' ')
+          .trim()
+          .toLowerCase();
+      }
 
 
       function doSearch() {
@@ -1712,7 +1713,7 @@
         if (!people.length) {
           setStatus('⚠️ لا توجد بيانات.');
 
-                 renderTree();
+          renderTree();
           return;
         }
 
@@ -1771,7 +1772,7 @@
         appState.searchIndex = 0;
 
         if (!matches.length) {
-           setStatus('⚠️ لا توجد نتائج مطابقة.');
+          setStatus('⚠️ لا توجد نتائج مطابقة.');
 
           renderTree();
           return;
@@ -1782,7 +1783,7 @@
         if (prevBtn) prevBtn.style.display = (matches.length > 1) ? 'inline-block' : 'none';
         if (nextBtn) nextBtn.style.display = (matches.length > 1) ? 'inline-block' : 'none';
 
-         setStatus(`✅ تم العثور على ${matches.length} نتيجة.`);
+        setStatus(`✅ تم العثور على ${matches.length} نتيجة.`);
 
         renderTree();
       }
@@ -2011,7 +2012,7 @@
           const blob = pdf.output('blob');
           const url = URL.createObjectURL(blob); openPdfDirect(url);
         } catch (e) {
-         setStatus(`⚠️ تعذر إنشاء PDF: ${String(e?.message || e)}`);
+          setStatus(`⚠️ تعذر إنشاء PDF: ${String(e?.message || e)}`);
 
         } finally {
           try { if (btn) btn.disabled = false; } catch { }
@@ -2093,7 +2094,7 @@
         // Open email client
         window.location.href = mailto;
 
-         setStatus('✅ تم فتح رسالة البريد لإرسالها إلى المدير.');
+        setStatus('✅ تم فتح رسالة البريد لإرسالها إلى المدير.');
 
         closeForgotPinModal();
       });
@@ -2109,7 +2110,7 @@
 
         if (now < state.lockUntil) {
           const remain = Math.ceil((state.lockUntil - now) / 1000);
-           if (err){ err.textContent = `تم تجاوز عدد المحاولات. انتظر ${remain} ثانية.`; err.style.display = 'block'; }
+          if (err) { err.textContent = `تم تجاوز عدد المحاولات. انتظر ${remain} ثانية.`; err.style.display = 'block'; }
 
           return;
         }
@@ -2127,11 +2128,11 @@
         if (attempts >= ADMIN_MAX_ATTEMPTS) {
           const lockUntil = now + ADMIN_LOCK_SECONDS * 1000;
           setAdminState(attempts, lockUntil);
-          if (err){ err.textContent = `تم قفل الدخول لمدة ${ADMIN_LOCK_SECONDS} ثانية.`; err.style.display = 'block'; }
-      } else {
-        setAdminState(attempts, 0);
-        if (err){ err.textContent = `رمز غير صحيح (${attempts}/${ADMIN_MAX_ATTEMPTS})`; err.style.display = 'block'; }
-      }
+          if (err) { err.textContent = `تم قفل الدخول لمدة ${ADMIN_LOCK_SECONDS} ثانية.`; err.style.display = 'block'; }
+        } else {
+          setAdminState(attempts, 0);
+          if (err) { err.textContent = `رمز غير صحيح (${attempts}/${ADMIN_MAX_ATTEMPTS})`; err.style.display = 'block'; }
+        }
 
         try { inp && inp.focus(); } catch { }
       });
@@ -2146,11 +2147,11 @@
 
       $('demoBtn')?.addEventListener('click', () => {
         appState.people = normalizePeople([
-        {id:'1', name:'الجد'},
-        {id:'1.1', name:'الابن 1'},
-        {id:'1.2', name:'الابن 2'},
-        {id:'1.1.1', name:'الحفيد 1'},
-        {id:'2', name:'فرع آخر'}
+          { id: '1', name: 'الجد' },
+          { id: '1.1', name: 'الابن 1' },
+          { id: '1.2', name: 'الابن 2' },
+          { id: '1.1.1', name: 'الحفيد 1' },
+          { id: '2', name: 'فرع آخر' }
 
         ]);
         appState.rootId = '1';
@@ -2169,7 +2170,7 @@
         if (now > pendingResetUntil) {
           pendingResetUntil = now + 6000;
           setStatus('⚠️ لتأكيد إعادة الضبط من Excel، اضغط زر "إعادة ضبط من Excel" مرة أخرى خلال 6 ثوانٍ.');
-                 return;
+          return;
         }
         pendingResetUntil = 0;
         storageClear();
@@ -2200,9 +2201,9 @@
           await ensureXlsxLib();
           if (!window.XLSX) throw new Error('مكتبة Excel غير متوفرة.');
           const people = appState.people || [];
-           if (!people.length) throw new Error('لا توجد بيانات لتصديرها.');
+          if (!people.length) throw new Error('لا توجد بيانات لتصديرها.');
 
-              const wsData = [['كود','الاسم']];
+          const wsData = [['كود', 'الاسم']];
 
           people.forEach(p => wsData.push([p.id, p.name]));
 
@@ -2233,7 +2234,7 @@
           setSelected(newId, name);
           const ni = $('nameInput');
           if (ni) ni.value = '';
-            setStatus('✅ تمت الإضافة بنجاح.');
+          setStatus('✅ تمت الإضافة بنجاح.');
           renderTree();
         } catch (e) {
           setStatus(`⚠️ ${String(e?.message || e)}`);
@@ -2254,7 +2255,7 @@
           setStatus('✅ تم تعديل الاسم.');
           renderTree();
         } catch (e) {
-            setStatus(`⚠️ ${String(e?.message || e)}`);
+          setStatus(`⚠️ ${String(e?.message || e)}`);
         }
       });
 
@@ -2283,7 +2284,7 @@
         }
       });
 
-      $('deleteConfirmYes')?.addEventListener('click', () => {
+      $('deleteConfirmOk')?.addEventListener('click', () => {
         try {
           if (!pendingDeleteId) {
             const m = $('deleteConfirmModal');
@@ -2305,7 +2306,7 @@
         } catch (e) {
           const m = $('deleteConfirmModal');
           if (m) m.style.display = 'none';
-          setStatus(`âڑ ï¸ڈ ${String(e?.message || e)}`);
+          setStatus(`⚠️ ${String(e?.message || e)}`);
         }
       });
 
