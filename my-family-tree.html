@@ -945,19 +945,19 @@
       ];
 
       // ===== REAL-TIME SYNC (FIREBASE) =====
-      // IMPORTANT: User must fill these values from Firebase Console
       const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "极",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyAIB3LmNuMl78VVq7YJ76LjQNrRBhgylb4",
+        authDomain: "family-tree-d94d0.firebaseapp.com",
+        databaseURL: "https://family-tree-d94d0-default-rtdb.firebaseio.com",
+        projectId: "family-tree-d94d0",
+        storageBucket: "family-tree-d94d0.firebasestorage.app",
+        messagingSenderId: "1074609088987",
+        appId: "1:1074609088987:web:896f2d2e97a1fa5a9b5ffe",
+        measurementId: "G-MLCYLVG0NM"
       };
 
       // Set to true once the config is filled
-      const FIREBASE_ENABLED = false;
+      const FIREBASE_ENABLED = true;
       const FIREBASE_SYNC_KEY = 'family_tree_sync_v1';
 
       const $ = (id) => document.getElementById(id);
@@ -1885,6 +1885,7 @@
       async function boot() {
         updateAdminVisibility();
         clearSelected();
+        initFirebase();
         const ok = await loadFromJsonIfExists();
         if (ok) { renderTree(); return; }
         await loadFromExcelAndSave();
