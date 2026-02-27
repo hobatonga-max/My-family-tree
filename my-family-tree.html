@@ -796,9 +796,6 @@
         <div class="toolbarRow toolbarRow2">
           <button id="adminToggleBtn" class="btn">إدخال/تعديل/حذف</button>
           <button id="adminLogoutBtn" class="btn" style="display:none">خروج المدير</button>
-          <button id="demoBtn" class="btn" style="display:none">عرض بيانات تجريبية</button>
-          <button id="resetBtn" class="btn" style="display:none">إعادة ضبط من Excel</button>
-          <button id="exportBtn" class="btn" style="display:none">تصدير JSON</button>
           <button id="exportExcelBtn" class="btn" style="display:none">تصدير إلى Excel</button>
         </div>
 
@@ -2110,7 +2107,7 @@
         // If already unlocked, toggle the whole admin UI (box + admin-only buttons)
         if (isAdmin()) {
           const box = $('adminBox');
-          const adminOnlyBtns = ['demoBtn', 'resetBtn', 'exportBtn', 'exportExcelBtn'];
+          const adminOnlyBtns = ['exportExcelBtn'];
           const showing = box && box.style.display !== 'none';
 
           if (box) box.style.display = showing ? 'none' : 'block';
@@ -2229,57 +2226,6 @@
 
       // App buttons
       $('retryBtn')?.addEventListener('click', boot);
-
-      $('demoBtn')?.addEventListener('click', () => {
-        appState.people = normalizePeople([
-          { id: '1', name: 'الجد' },
-          { id: '1.1', name: 'الابن 1' },
-          { id: '1.2', name: 'الابن 2' },
-          { id: '1.1.1', name: 'الحفيد 1' },
-          { id: '2', name: 'فرع آخر' }
-
-        ]);
-        appState.rootId = '1';
-        appState.expanded = new Set(['1']);
-        persist();
-        clearSelected();
-        setStatus('✅ تم تحميل بيانات تجريبية وحفظها كـ JSON.');
-        const rb = $('retryBtn');
-        if (rb) rb.style.display = 'none';
-        renderTree();
-      });
-
-      let pendingResetUntil = 0;
-      $('resetBtn')?.addEventListener('click', async () => {
-        const now = Date.now();
-        if (now > pendingResetUntil) {
-          pendingResetUntil = now + 6000;
-          setStatus('⚠️ لتأكيد إعادة الضبط من Excel، اضغط زر "إعادة ضبط من Excel" مرة أخرى خلال 6 ثوانٍ.');
-          return;
-        }
-        pendingResetUntil = 0;
-        storageClear();
-        await boot();
-      });
-
-      $('exportBtn')?.addEventListener('click', () => {
-        try {
-          const json = JSON.stringify(appState.people || [], null, 2);
-          const blob = new Blob([json], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'family_tree.json';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-          setStatus('✅ تم تصدير JSON.');
-
-        } catch (e) {
-          setStatus(`âڑ ï¸ڈ ${String(e?.message || e)}`);
-        }
-      });
 
       $('exportExcelBtn')?.addEventListener('click', async () => {
         try {
