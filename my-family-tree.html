@@ -2161,15 +2161,15 @@
         const admin = 'hobatonga@gmail.com';
         const subject = 'Family Tree — Password recovery request';
         const bodyLines = [
-          'Hello Admin,',
+          'هلا ومرحبا',
           '',
-          'A user requested the admin password for the Family Tree application.',
-          `User email: ${email}`,
-          `Time: ${new Date().toLocaleString()}`,
+          'طلب أحد المستخدمين كلمة مرور المدير لتطبيق شجرة العائلة.',
+          `بريد المستخدم الإلكتروني: ${email}`,
+          `الوقت: ${new Date().toLocaleString()}`,
           '',
-          'Please reply to the user with the password or reset instructions.',
+          'يرجى الرد على المستخدم بكلمة المرور أو تعليمات إعادة تعيينها',
           '',
-          '— Sent from Family Tree (client-side request)'
+          ' مُرسَل من تطبيق شجرة العائلة (طلب من جانب المستخدم) - '
         ];
         const body = bodyLines.join('\n');
         const mailto = `mailto:${encodeURIComponent(admin)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
