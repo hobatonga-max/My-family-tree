@@ -1800,30 +1800,27 @@
 
         const tokens = term.split(/\s+/).filter(Boolean);
         const { byId, parentOf } = buildIndexes(people);
-
-        // If single token: normal "contains" search (OR)
-        // If multi token: chain search (child -> parent -> grandparent ...)
         const matchesSet = new Set();
 
-        if (tokens.length === 1) {
-          const t = tokens[0];
-          for (const p of people) {
-            const n = normalizeText(p.name || '');
-            const nNoSpace = n.replace(/\s+/g, '');
-            if (n.includes(t) || nNoSpace.includes(t)) {
-              matchesSet.add(p.id);
-              expandAncestors(p.id, parentOf);
-            }
+        const termNoSpace = term.replace(/\s+/g, '');
+
+        for (const p of people) {
+          const n = normalizeText(p.name || '');
+          const nNoSpace = n.replace(/\s+/g, '');
+
+          // 1. Full literal match (e.g. "علي (كتاب)")
+          if (n.includes(term) || nNoSpace.includes(termNoSpace)) {
+            matchesSet.add(p.id);
+            expandAncestors(p.id, parentOf);
+            continue;
           }
-        } else {
-          for (const p of people) {
-            const childName = normalizeText(p.name || '');
-            if (!childName) continue;
-            if (!childName.includes(tokens[0])) continue;
+
+          // 2. Chain search fallback (e.g. "Child Parent")
+          if (tokens.length > 1) {
+            if (!n.includes(tokens[0])) continue;
 
             let curId = p.id;
             let ok = true;
-
             for (let i = 1; i < tokens.length; i++) {
               const parId = parentOf.get(curId) || deriveParent(curId);
               if (!parId) { ok = false; break; }
@@ -2370,6 +2367,3 @@
 </body>
 
 </html>
-
-
-
