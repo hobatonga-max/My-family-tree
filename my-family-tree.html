@@ -1861,8 +1861,15 @@
         if (prevBtn) prevBtn.style.display = (matches.length > 1) ? 'inline-block' : 'none';
         if (nextBtn) nextBtn.style.display = (matches.length > 1) ? 'inline-block' : 'none';
 
-        setStatus(`✅ تم العثور على ${matches.length} نتيجة.`);
-
+        if ((!matches.length) == 1) {
+          setStatus(`✅ تم العثور على ${matches.length} نتيجة.`);
+          }
+         if ((!matches.length) == 2) {
+          setStatus(`✅ تم العثور على ${matches.length} نتيجة.`);
+          }
+         if ((!matches.length) > 2) {
+          setStatus(`✅ تم العثور على ${matches.length} نتائج.`);
+          }
         renderTree();
       }
 
@@ -2367,3 +2374,4 @@
 </body>
 
 </html>
+
