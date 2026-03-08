@@ -1955,6 +1955,11 @@
 
           // Option B: print CURRENT VIEW only (no auto-expand)
           renderTree();
+          
+          // Add padding to the right so the tree doesn't start at the very edge
+          const originalPaddingRight = host.style.paddingRight;
+          host.style.paddingRight = '50px';
+
           await waitTwoFrames(); // ensures connector lines are drawn (requestAnimationFrame)
 
           const canvas = await html2canvas(host, {
@@ -1964,6 +1969,9 @@
             scrollX: 0,
             scrollY: 0
           });
+
+          // Restore padding
+          host.style.paddingRight = originalPaddingRight;
 
           const imgData = canvas.toDataURL('image/jpeg', 0.92);
 
@@ -2084,11 +2092,11 @@
             // Footer (image)
             pdf.addImage(footerImg, 'PNG', 0, pageHeight - footerH, pageWidth, footerH);
 
-            // Page number (centered)
+            // Page number (far left, just number)
             try {
               pdf.setFontSize(10);
               pdf.setTextColor(0, 0, 0);
-              pdf.text(`page ${pageNum} of ${totalPages}`, pageWidth / 2, pageHeight - 3, { align: 'center' });
+              pdf.text(String(pageNum), 10, pageHeight - 5);
             } catch { }
 
             yPx += sliceHpx;
@@ -2374,5 +2382,3 @@
 </body>
 
 </html>
-
-
