@@ -758,6 +758,103 @@
       padding-left: 170px !important;
       padding-right: 20px !important;
     }
+    /* ===== Print Preview Overlay ===== */
+    #printPreviewOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000000;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #printPreviewHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      gap: 12px;
+    }
+
+    .preview-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    #previewContent {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      background: #f1f5f9;
+    }
+
+    .preview-page {
+      background: #fff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 210mm;
+      min-height: 297mm;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .preview-page img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .close-preview {
+      background: #ef4444 !important;
+      color: #fff !important;
+      border: none !important;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+
+      #printPreviewOverlay,
+      #printPreviewOverlay * {
+        visibility: visible !important;
+      }
+
+      #printPreviewOverlay {
+        position: absolute !important;
+        inset: 0 !important;
+        display: block !important;
+        background: #fff !important;
+        overflow: visible !important;
+      }
+
+      #printPreviewHeader {
+        display: none !important;
+      }
+
+      #previewContent {
+        padding: 0 !important;
+        background: #fff !important;
+        overflow: visible !important;
+        display: block !important;
+      }
+
+      .preview-page {
+        width: 210mm !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        page-break-after: always !important;
+        break-after: page !important;
+      }
+    }
   </style>
 </head>
 
@@ -1924,195 +2021,238 @@
         await loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
       }
 
-      function waitTwoFrames() {
-        return new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
-      }
+      let capturedPages = [];
 
-      function openPdfDirect(url) {
-        // Optimizing for mobile: direct window.open or location.href
-        // avoids the background "File Downloaded" toast in most cases
-        try {
-          const win = window.open(url, '_blank');
-          if (!win || win.closed || typeof win.closed === 'undefined') {
-            throw new Error('Popup blocked');
-          }
-        } catch {
-          window.location.href = url;
+      async function generatePageSlices() {
+        const host = $('treeHost');
+        if (!host || !host.firstElementChild) {
+          throw new Error('لا توجد شجرة لطباعتها الآن.');
         }
+
+        await ensureHtml2Canvas();
+
+        const originalPaddingRight = host.style.paddingRight;
+        host.style.paddingRight = '50px';
+        await waitTwoFrames();
+
+        const canvas = await html2canvas(host, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true,
+          scrollX: 0,
+          scrollY: 0
+        });
+
+        host.style.paddingRight = originalPaddingRight;
+
+        // Header Image (consistent for preview and PDF)
+        const headerCanvas = document.createElement('canvas');
+        headerCanvas.width = 2000;
+        headerCanvas.height = 220;
+        const hctx = headerCanvas.getContext('2d');
+        const todayStr = new Date().toISOString().slice(0, 10);
+        if (hctx) {
+          hctx.fillStyle = '#ffffff';
+          hctx.fillRect(0, 0, headerCanvas.width, headerCanvas.height);
+          hctx.fillStyle = '#000000';
+          hctx.textBaseline = 'middle';
+          hctx.font = 'bold 72px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
+          hctx.textAlign = 'center';
+          hctx.direction = 'rtl';
+          hctx.fillText('شجرة العائلة', headerCanvas.width / 2, 110);
+          try {
+            const t = hctx.measureText('شجرة العائلة');
+            const w = t.width || 0;
+            const yLine = 110 + 44;
+            hctx.strokeStyle = '#000000';
+            hctx.lineWidth = 6;
+            hctx.beginPath();
+            hctx.moveTo((headerCanvas.width / 2) - (w / 2), yLine);
+            hctx.lineTo((headerCanvas.width / 2) + (w / 2), yLine);
+            hctx.stroke();
+          } catch { }
+          hctx.font = 'bold 46px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
+          hctx.textAlign = 'left';
+          hctx.direction = 'ltr';
+          hctx.fillText(todayStr, 60, 110);
+        }
+        const headerImg = headerCanvas.toDataURL('image/png');
+
+        // Footer Image
+        const footerCanvas = document.createElement('canvas');
+        footerCanvas.width = 2000;
+        footerCanvas.height = 220;
+        const fctx = footerCanvas.getContext('2d');
+        if (fctx) {
+          fctx.fillStyle = '#ffffff';
+          fctx.fillRect(0, 0, footerCanvas.width, footerCanvas.height);
+          const x = 60;
+          fctx.fillStyle = '#000000';
+          fctx.textAlign = 'left';
+          fctx.direction = 'rtl';
+          fctx.font = 'bold 26px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
+          fctx.fillText('تم تطويره بواسطة: ايهاب عثمان تونجا', x, 85);
+          fctx.font = 'bold 24px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
+          fctx.fillText('حقوق النسخ محفوظة', x, 125);
+        }
+        const footerImg = footerCanvas.toDataURL('image/png');
+
+        const pdfMock = { internal: { pageSize: { getWidth: () => 210, getHeight: () => 297 } } };
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const headerH = 14;
+        const headerHSmall = 6;
+        const footerH = 10;
+        const imgWidthMm = pageWidth;
+        const mmPerPx = imgWidthMm / canvas.width;
+
+        const circles = Array.from(host.querySelectorAll('.node-circle'));
+        const hostRect = host.getBoundingClientRect();
+        const canvasScale = canvas.width / host.offsetWidth;
+        const circleBounds = circles.map(c => {
+          const r = c.getBoundingClientRect();
+          return {
+            top: (r.top - hostRect.top) * canvasScale,
+            bottom: (r.bottom - hostRect.top) * canvasScale
+          };
+        });
+
+        const pages = [];
+        let yPx = 0;
+        let pNum = 1;
+
+        while (yPx < canvas.height) {
+          const isFirst = (pNum === 1);
+          const currentHeaderH = isFirst ? headerH : headerHSmall;
+          const usableH = pageHeight - currentHeaderH - footerH;
+          let usableHPx = Math.floor(usableH / mmPerPx);
+
+          let targetBottomPx = yPx + usableHPx;
+          if (targetBottomPx < canvas.height) {
+            const intersections = circleBounds.filter(b => b.top < targetBottomPx && b.bottom > targetBottomPx);
+            if (intersections.length) {
+              const highestTop = Math.min(...intersections.map(b => b.top));
+              usableHPx = Math.floor(highestTop - yPx);
+            }
+          }
+
+          const sliceHpx = Math.max(1, Math.min(usableHPx, canvas.height - yPx));
+          const sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = sliceHpx;
+          const sctx = sliceCanvas.getContext('2d');
+          if (sctx) {
+            sctx.fillStyle = '#ffffff';
+            sctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+            sctx.drawImage(canvas, 0, yPx, canvas.width, sliceHpx, 0, 0, canvas.width, sliceHpx);
+          }
+
+          // Build a full "Page" as a single image for the preview
+          const finalPageCanvas = document.createElement('canvas');
+          finalPageCanvas.width = canvas.width;
+          finalPageCanvas.height = Math.round(pageHeight / mmPerPx);
+          const pctx = finalPageCanvas.getContext('2d');
+          if (pctx) {
+            pctx.fillStyle = '#ffffff';
+            pctx.fillRect(0, 0, finalPageCanvas.width, finalPageCanvas.height);
+
+            // Add Header
+            if (isFirst) {
+              const hImg = new Image();
+              hImg.src = headerImg;
+              await new Promise(r => hImg.onload = r);
+              pctx.drawImage(hImg, 0, 0, finalPageCanvas.width, Math.round(headerH / mmPerPx));
+            }
+
+            // Add Slice
+            const sImg = new Image();
+            sImg.src = sliceCanvas.toDataURL('image/png');
+            await new Promise(r => sImg.onload = r);
+            pctx.drawImage(sImg, 0, Math.round(currentHeaderH / mmPerPx), finalPageCanvas.width, sliceHpx);
+
+            // Add Footer
+            const fImg = new Image();
+            fImg.src = footerImg;
+            await new Promise(r => fImg.onload = r);
+            pctx.drawImage(fImg, 0, finalPageCanvas.height - Math.round(footerH / mmPerPx), finalPageCanvas.width, Math.round(footerH / mmPerPx));
+
+            // Add Page Number
+            pctx.font = 'bold 36px Arial';
+            pctx.fillStyle = '#000000';
+            pctx.fillText(`(${pNum})`, Math.round(10 / mmPerPx), Math.round(8 / mmPerPx));
+          }
+
+          pages.push({
+            dataUrl: finalPageCanvas.toDataURL('image/png'),
+            pageNum: pNum,
+            isFirst
+          });
+
+          yPx += sliceHpx;
+          pNum++;
+        }
+        return pages;
       }
 
-      async function printTreeToPdfCurrent() {
+      async function showPrintPreview() {
         const btn = $('printBtn');
         try { if (btn) btn.disabled = true; } catch { }
         try {
-          const host = $('treeHost');
-          if (!host || !host.firstElementChild) {
-            setStatus('⚠️ لا توجد شجرة لطباعتها الآن.');
-            return;
-          }
+          setStatus('🔄 جاري تجهيز معاينة الطباعة...');
+          capturedPages = await generatePageSlices();
 
-          await ensureHtml2Canvas();
-          await ensureJsPdf();
+          const container = $('previewContent');
+          if (!container) return;
+          container.innerHTML = '';
 
-          renderTree();
-          
-          const originalPaddingRight = host.style.paddingRight;
-          host.style.paddingRight = '50px';
-
-          await waitTwoFrames(); 
-
-          const canvas = await html2canvas(host, {
-            backgroundColor: '#ffffff',
-            scale: 2,          
-            useCORS: true,
-            scrollX: 0,
-            scrollY: 0
+          capturedPages.forEach(p => {
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'preview-page';
+            const img = document.createElement('img');
+            img.src = p.dataUrl;
+            pageDiv.appendChild(img);
+            container.appendChild(pageDiv);
           });
 
-          host.style.paddingRight = originalPaddingRight;
-
-          const imgData = canvas.toDataURL('image/jpeg', 0.92);
-
-          // Header Image
-          const headerCanvas = document.createElement('canvas');
-          headerCanvas.width = 2000;
-          headerCanvas.height = 220;
-          const hctx = headerCanvas.getContext('2d');
-          const todayStr = new Date().toISOString().slice(0, 10);
-          if (hctx) {
-            hctx.fillStyle = '#ffffff';
-            hctx.fillRect(0, 0, headerCanvas.width, headerCanvas.height);
-            hctx.fillStyle = '#000000';
-            hctx.textBaseline = 'middle';
-            hctx.font = 'bold 72px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
-            hctx.textAlign = 'center';
-            hctx.direction = 'rtl';
-            hctx.fillText('شجرة العائلة', headerCanvas.width / 2, 110);
-            try {
-              const t = hctx.measureText('شجرة العائلة');
-              const w = t.width || 0;
-              const yLine = 110 + 44;
-              hctx.strokeStyle = '#000000';
-              hctx.lineWidth = 6;
-              hctx.beginPath();
-              hctx.moveTo((headerCanvas.width / 2) - (w / 2), yLine);
-              hctx.lineTo((headerCanvas.width / 2) + (w / 2), yLine);
-              hctx.stroke();
-            } catch { }
-            hctx.font = 'bold 46px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
-            hctx.textAlign = 'left';
-            hctx.direction = 'ltr';
-            hctx.fillText(todayStr, 60, 110);
-          }
-          const headerImg = headerCanvas.toDataURL('image/png');
-
-          // Footer Image
-          const footerCanvas = document.createElement('canvas');
-          footerCanvas.width = 2000;
-          footerCanvas.height = 220;
-          const fctx = footerCanvas.getContext('2d');
-          if (fctx) {
-            fctx.fillStyle = '#ffffff';
-            fctx.fillRect(0, 0, footerCanvas.width, footerCanvas.height);
-            const x = 60;
-            fctx.fillStyle = '#000000';
-            fctx.textAlign = 'left';
-            fctx.direction = 'rtl';
-            fctx.font = 'bold 26px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
-            fctx.fillText('تم تطويره بواسطة: ايهاب عثمان تونجا', x, 85);
-            fctx.font = 'bold 24px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
-            fctx.fillText('حقوق النسخ محفوظة', x, 125);
-          }
-          const footerImg = footerCanvas.toDataURL('image/png');
-
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-
-          const pageWidth = pdf.internal.pageSize.getWidth();
-          const pageHeight = pdf.internal.pageSize.getHeight();
-
-          const headerH = 14; 
-          const headerHSmall = 6; 
-          const footerH = 10; 
-          
-          const imgWidthMm = pageWidth;
-          const mmPerPx = imgWidthMm / canvas.width;
-
-          // Robust circle detection with scale factor
-          const circles = Array.from(host.querySelectorAll('.node-circle'));
-          const hostRect = host.getBoundingClientRect();
-          const canvasScale = canvas.width / host.offsetWidth; 
-          const circleBounds = circles.map(c => {
-            const r = c.getBoundingClientRect();
-            return {
-              top: (r.top - hostRect.top) * canvasScale,
-              bottom: (r.bottom - hostRect.top) * canvasScale
-            };
-          });
-
-          let pageNum = 1;
-          let yPx = 0;
-
-          while (yPx < canvas.height) {
-            const isFirst = (pageNum === 1);
-            const currentHeaderH = isFirst ? headerH : headerHSmall;
-            const usableH = pageHeight - currentHeaderH - footerH;
-            let usableHPx = Math.floor(usableH / mmPerPx);
-            
-            // Smart Slicing Loop: ensures no cut circles
-            let targetBottomPx = yPx + usableHPx;
-            if (targetBottomPx < canvas.height) {
-              const intersections = circleBounds.filter(b => b.top < targetBottomPx && b.bottom > targetBottomPx);
-              if (intersections.length) {
-                const highestTop = Math.min(...intersections.map(b => b.top));
-                usableHPx = Math.floor(highestTop - yPx);
-              }
-            }
-
-            const sliceHpx = Math.max(1, Math.min(usableHPx, canvas.height - yPx));
-
-            const sliceCanvas = document.createElement('canvas');
-            sliceCanvas.width = canvas.width;
-            sliceCanvas.height = sliceHpx;
-            const sctx = sliceCanvas.getContext('2d');
-            if (sctx) {
-              sctx.fillStyle = '#ffffff';
-              sctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-              sctx.drawImage(canvas, 0, yPx, canvas.width, sliceHpx, 0, 0, canvas.width, sliceHpx);
-            }
-
-            const sliceData = sliceCanvas.toDataURL('image/png');
-
-            if (isFirst) {
-              pdf.addImage(headerImg, 'PNG', 0, 0, pageWidth, headerH);
-            }
-
-            const sliceHmm = sliceHpx * mmPerPx;
-            pdf.addImage(sliceData, 'PNG', 0, currentHeaderH, imgWidthMm, sliceHmm);
-            pdf.addImage(footerImg, 'PNG', 0, pageHeight - footerH, pageWidth, footerH);
-
-            try {
-              pdf.setFontSize(10);
-              pdf.setTextColor(0, 0, 0);
-              pdf.text(`(${pageNum})`, 10, 8); 
-            } catch { }
-
-            yPx += sliceHpx;
-            pageNum++;
-            if (yPx < canvas.height) pdf.addPage();
-          }
-          
-          const blob = pdf.output('blob');
-          const url = URL.createObjectURL(blob); 
-          openPdfDirect(url);
+          $('printPreviewOverlay').style.display = 'flex';
+          setStatus('');
         } catch (e) {
-          setStatus(`⚠️ تعذر إنشاء PDF: ${String(e?.message || e)}`);
+          setStatus(`⚠️ ${String(e?.message || e)}`);
         } finally {
           try { if (btn) btn.disabled = false; } catch { }
         }
       }
 
-      $('printBtn')?.addEventListener('click', () => { printTreeToPdfCurrent(); });
+      function closePrintPreview() {
+        $('printPreviewOverlay').style.display = 'none';
+        capturedPages = [];
+      }
+
+      async function downloadAsPdf() {
+        if (!capturedPages.length) return;
+        setStatus('🔄 جاري إنشاء ملف PDF...');
+        try {
+          await ensureJsPdf();
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+
+          for (let i = 0; i < capturedPages.length; i++) {
+            if (i > 0) pdf.addPage();
+            pdf.addImage(capturedPages[i].dataUrl, 'PNG', 0, 0, pageWidth, pageHeight);
+          }
+          pdf.save('family-tree.pdf');
+          setStatus('✅ تم تحميل الملف بنجاح.');
+        } catch (e) {
+          setStatus(`⚠️ فشل التحميل: ${String(e?.message || e)}`);
+        }
+      }
+
+      $('printBtn')?.addEventListener('click', showPrintPreview);
+      $('browserPrintBtn')?.addEventListener('click', () => window.print());
+      $('downloadPdfBtn')?.addEventListener('click', downloadAsPdf);
+      $('closePreviewBtn')?.addEventListener('click', closePrintPreview);
 
       $('adminToggleBtn')?.addEventListener('click', () => {
         // If already unlocked, toggle the whole admin UI (box + admin-only buttons)
@@ -2377,6 +2517,20 @@
       // Start
       boot();
     </script>
+    <!-- Print Preview Overlay -->
+    <div id="printPreviewOverlay">
+      <div id="printPreviewHeader">
+        <div style="font-weight: bold; font-size: 18px;">معاينة الطباعة</div>
+        <div class="preview-actions">
+          <button id="browserPrintBtn" class="btn" style="background: #2563eb; color: #fff;">طباعة مباشرة</button>
+          <button id="downloadPdfBtn" class="btn">تحميل PDF</button>
+          <button id="closePreviewBtn" class="btn close-preview">إغلاق</button>
+        </div>
+      </div>
+      <div id="previewContent">
+        <!-- Pages will be injected here -->
+      </div>
+    </div>
   </div>
 </body>
 
