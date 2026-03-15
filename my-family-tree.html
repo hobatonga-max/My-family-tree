@@ -2041,30 +2041,25 @@
           const { jsPDF } = window.jspdf;
           const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
-          // --- Multi-page slicing (avoids duplicated/overlapped rows between pages) ---
-          // We slice the rendered canvas into page-height chunks in PIXELS, then add each slice
-          // into the PDF. This prevents the "last name repeated on next page" artifact that
-          // can happen when shifting the same full image with floating-point mm values.
-
           const pageWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
 
-          const headerH = 14; // mm
+          const headerH = 14; // mm (with title)
+          const headerHSmall = 6; // mm (minimal margin for subsequent pages)
           const footerH = 10; // mm
-          const usableH = pageHeight - headerH - footerH;
-
-          // Fit to full page width
+          
           const imgWidthMm = pageWidth;
-
-          // Convert mm <-> px based on the captured canvas width
           const mmPerPx = imgWidthMm / canvas.width;
-          const usableHPx = Math.floor(usableH / mmPerPx);
 
-          const totalPages = Math.max(1, Math.ceil(canvas.height / usableHPx));
           let pageNum = 1;
-
           let yPx = 0;
+
           while (yPx < canvas.height) {
+            const isFirst = (pageNum === 1);
+            const currentHeaderH = isFirst ? headerH : headerHSmall;
+            const usableH = pageHeight - currentHeaderH - footerH;
+            const usableHPx = Math.floor(usableH / mmPerPx);
+            
             const sliceHpx = Math.min(usableHPx, canvas.height - yPx);
 
             // Build a per-page slice canvas
@@ -2075,27 +2070,28 @@
             if (sctx) {
               sctx.fillStyle = '#ffffff';
               sctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-              // Crop from the big canvas into this slice
               sctx.drawImage(canvas, 0, yPx, canvas.width, sliceHpx, 0, 0, canvas.width, sliceHpx);
             }
 
-            const sliceData = sliceCanvas.toDataURL('image/png'); // PNG keeps lines crisp
+            const sliceData = sliceCanvas.toDataURL('image/png');
 
-            // Header (image)
-            pdf.addImage(headerImg, 'PNG', 0, 0, pageWidth, headerH);
+            // Header - Only show full header with title on first page
+            if (isFirst) {
+              pdf.addImage(headerImg, 'PNG', 0, 0, pageWidth, headerH);
+            }
 
             // Slice image below header
             const sliceHmm = sliceHpx * mmPerPx;
-            pdf.addImage(sliceData, 'PNG', 0, headerH, imgWidthMm, sliceHmm);
+            pdf.addImage(sliceData, 'PNG', 0, currentHeaderH, imgWidthMm, sliceHmm);
 
             // Footer (image)
             pdf.addImage(footerImg, 'PNG', 0, pageHeight - footerH, pageWidth, footerH);
 
-            // Page number (far left, below rights text)
+            // Page number (format changed to ($pageNumber))
             try {
               pdf.setFontSize(9);
               pdf.setTextColor(0, 0, 0);
-              pdf.text(`(${pageNum})`, 10, pageHeight - 3);
+              pdf.text(`(${pageNum}$)`, 10, pageHeight - 3);
             } catch { }
 
             yPx += sliceHpx;
@@ -2103,7 +2099,11 @@
             if (yPx < canvas.height) pdf.addPage();
           }
           const blob = pdf.output('blob');
-          const url = URL.createObjectURL(blob); openPdfDirect(url);
+          const url = URL.createObjectURL(blob); 
+          
+          // For mobile, we use window.open or a direct navigation to the blob URL
+          // If in a hybrid app/WebView, this usually triggers the system viewer
+          window.open(url, '_blank');
         } catch (e) {
           setStatus(`⚠️ تعذر إنشاء PDF: ${String(e?.message || e)}`);
 
