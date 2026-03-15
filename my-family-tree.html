@@ -2052,30 +2052,41 @@
 
         const circles = Array.from(host.querySelectorAll('.node-circle'));
         
-        // Force the host to expand to its full content size for capture
+        // Force the host to expand to its full content size to measure it
         const originalWidth = host.style.width;
         const originalHeight = host.style.height;
         const originalPadding = host.style.padding;
         
         host.style.width = 'max-content';
         host.style.height = 'max-content';
-        host.style.padding = '100px'; // Generous buffer
+        host.style.padding = '120px'; // Extra buffer for all edges
 
         await waitTwoFrames();
+
+        // MEASURE FULL DIMENSIONS
+        const fullW = host.scrollWidth;
+        const fullH = host.scrollHeight;
 
         const canvas = await html2canvas(host, {
           backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
+          width: fullW,
+          height: fullH,
+          windowWidth: fullW + 100,
+          windowHeight: fullH + 100,
           scrollX: 0,
           scrollY: 0,
           onclone: (clonedDoc) => {
             const h = clonedDoc.getElementById('treeHost');
             if (h) {
-              h.style.width = 'max-content';
-              h.style.height = 'max-content';
-              h.style.display = 'inline-block';
+              h.style.width = fullW + 'px';
+              h.style.height = fullH + 'px';
+              h.style.padding = '120px';
+              h.style.display = 'block';
             }
+            clonedDoc.documentElement.style.width = (fullW + 200) + 'px';
+            clonedDoc.documentElement.style.height = (fullH + 200) + 'px';
           }
         });
 
@@ -2084,7 +2095,7 @@
         host.style.height = originalHeight;
         host.style.padding = originalPadding;
 
-        // Header Image (consistent for preview and PDF)
+        // ... Header/Footer generation logic ...
         const headerCanvas = document.createElement('canvas');
         headerCanvas.width = 2000;
         headerCanvas.height = 220;
@@ -2117,7 +2128,6 @@
         }
         const headerImg = headerCanvas.toDataURL('image/png');
 
-        // Footer Image
         const footerCanvas = document.createElement('canvas');
         footerCanvas.width = 2000;
         footerCanvas.height = 220;
@@ -2141,16 +2151,26 @@
         const headerH = 14;
         const headerHSmall = 6;
         const footerH = 10;
-        const mmPerPx = pageWidth / canvas.width;
+        
+        // LIMIT SCALE: Don't zoom in too much on narrow trees (fixes "Big Circles")
+        // Standard 96 DPI is ~0.2645 mm per pixel. Divide by 2 because canvas scale is 2.
+        const maxMmPerPx = 0.264583 / 1.5; // Slightly larger than 96dpi to look good
+        let mmPerPx = pageWidth / canvas.width;
+        if (mmPerPx > maxMmPerPx) mmPerPx = maxMmPerPx;
+
+        // Calculate page width in pixels based on our chosen scale
+        const pageWpx = Math.round(pageWidth / mmPerPx);
+        const pageHpx = Math.round(pageHeight / mmPerPx);
+        const offsetX = Math.floor((pageWpx - canvas.width) / 2);
 
         const hostRect = host.getBoundingClientRect();
         
         // Recalculate circle bounds relative to the captured canvas pixels
+        // Since we captured the whole Host, we just map Host-Logical to Canvas-Physical
         const circleBounds = circles.map(c => {
           const r = c.getBoundingClientRect();
           const topInHost = r.top - hostRect.top;
           const bottomInHost = r.bottom - hostRect.top;
-          // Map logical host pixels to canvas pixels
           return {
             top: topInHost * (canvas.height / host.offsetHeight),
             bottom: bottomInHost * (canvas.height / host.offsetHeight)
@@ -2172,7 +2192,10 @@
             const intersections = circleBounds.filter(b => b.top < targetBottomPx && b.bottom > targetBottomPx);
             if (intersections.length) {
               const highestTop = Math.min(...intersections.map(b => b.top));
-              usableHPx = Math.floor(highestTop - yPx);
+              // Ensure we actually make progress
+              if (highestTop > yPx + 10) {
+                 usableHPx = Math.floor(highestTop - yPx);
+              }
             }
           }
 
@@ -2189,26 +2212,25 @@
 
           // Build a full "Page" as a single image for the preview
           const finalPageCanvas = document.createElement('canvas');
-          finalPageCanvas.width = canvas.width;
-          finalPageCanvas.height = Math.round(pageHeight / mmPerPx);
+          finalPageCanvas.width = pageWpx;
+          finalPageCanvas.height = pageHpx;
           const pctx = finalPageCanvas.getContext('2d');
           if (pctx) {
             pctx.fillStyle = '#ffffff';
             pctx.fillRect(0, 0, finalPageCanvas.width, finalPageCanvas.height);
 
             // Add Header
-            if (isFirst) {
-              const hImg = new Image();
-              hImg.src = headerImg;
-              await new Promise(r => hImg.onload = r);
-              pctx.drawImage(hImg, 0, 0, finalPageCanvas.width, Math.round(headerH / mmPerPx));
-            }
+            const hImg = new Image();
+            hImg.src = headerImg;
+            await new Promise(r => hImg.onload = r);
+            const drawH = Math.round((isFirst ? headerH : headerHSmall) / mmPerPx);
+            pctx.drawImage(hImg, 0, 0, finalPageCanvas.width, drawH);
 
-            // Add Slice
+            // Add Slice (Centered)
             const sImg = new Image();
             sImg.src = sliceCanvas.toDataURL('image/png');
             await new Promise(r => sImg.onload = r);
-            pctx.drawImage(sImg, 0, Math.round(currentHeaderH / mmPerPx), finalPageCanvas.width, sliceHpx);
+            pctx.drawImage(sImg, offsetX, Math.round(currentHeaderH / mmPerPx), canvas.width, sliceHpx);
 
             // Add Footer
             const fImg = new Image();
@@ -2230,6 +2252,9 @@
 
           yPx += sliceHpx;
           pNum++;
+          
+          // Safety break to prevent infinite loops if something goes wrong
+          if (pNum > 100) break;
         }
         return pages;
       }
