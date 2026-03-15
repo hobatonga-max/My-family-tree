@@ -2050,34 +2050,60 @@
 
         await ensureHtml2Canvas();
 
-        const originalPaddingRight = host.style.paddingRight;
-        const originalPaddingLeft = host.style.paddingLeft;
-        const originalWidth = host.style.width;
-        const originalMinWidth = host.style.minWidth;
+        const circles = Array.from(host.querySelectorAll('.node-circle'));
+        const lineElements = Array.from(host.querySelectorAll('.vline, .hline'));
+        const hostRect = host.getBoundingClientRect();
+
+        // Calculate the bounding box of all content relative to host
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         
-        // Ensure we capture the full scroll width of the tree
-        const scrollW = host.scrollWidth + 200; // Add generous buffer
-        host.style.width = scrollW + 'px';
-        host.style.minWidth = scrollW + 'px';
-        host.style.paddingRight = '100px'; 
-        host.style.paddingLeft = '100px';
+        [...circles, ...lineElements].forEach(el => {
+          const r = el.getBoundingClientRect();
+          const left = r.left - hostRect.left;
+          const right = r.right - hostRect.left;
+          const top = r.top - hostRect.top;
+          const bottom = r.bottom - hostRect.top;
+          
+          if (left < minX) minX = left;
+          if (right > maxX) maxX = right;
+          if (top < minY) minY = top;
+          if (bottom > maxY) maxY = bottom;
+        });
+
+        // Add padding buffers
+        const padding = 60; 
+        minX = Math.max(0, minX - padding);
+        maxX = maxX + padding;
+        minY = Math.max(0, minY - padding);
+        maxY = maxY + padding;
         
+        const captureW = maxX - minX;
+        const captureH = maxY - minY;
+
         await waitTwoFrames();
 
         const canvas = await html2canvas(host, {
           backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
-          width: scrollW,
+          x: minX,
+          y: minY,
+          width: captureW,
+          height: captureH,
           scrollX: 0,
           scrollY: 0,
-          windowWidth: scrollW
+          windowWidth: host.scrollWidth + 500 // ensure enough window space for rendering
         });
 
-        host.style.paddingRight = originalPaddingRight;
-        host.style.paddingLeft = originalPaddingLeft;
-        host.style.width = originalWidth;
-        host.style.minWidth = originalMinWidth;
+        // Use the same minX for circle detection alignment
+        const canvasScale = canvas.width / captureW;
+        const circleBounds = circles.map(c => {
+          const r = c.getBoundingClientRect();
+          return {
+            top: (r.top - hostRect.top - minY) * canvasScale,
+            bottom: (r.bottom - hostRect.top - minY) * canvasScale
+          };
+        });
 
         // Header Image (consistent for preview and PDF)
         const headerCanvas = document.createElement('canvas');
@@ -2137,21 +2163,8 @@
         const headerH = 14;
         const headerHSmall = 6;
         const footerH = 10;
-        
-        // Horizontal Scaling Logic: ensure the canvas fits the page width without clipping
         const imgWidthMm = pageWidth;
         const mmPerPx = imgWidthMm / canvas.width;
-
-        const circles = Array.from(host.querySelectorAll('.node-circle'));
-        const hostRect = host.getBoundingClientRect();
-        const canvasScale = canvas.width / host.offsetWidth;
-        const circleBounds = circles.map(c => {
-          const r = c.getBoundingClientRect();
-          return {
-            top: (r.top - hostRect.top) * canvasScale,
-            bottom: (r.bottom - hostRect.top) * canvasScale
-          };
-        });
 
         const pages = [];
         let yPx = 0;
