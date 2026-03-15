@@ -2051,6 +2051,17 @@
           const imgWidthMm = pageWidth;
           const mmPerPx = imgWidthMm / canvas.width;
 
+          // --- Pre-calculate circle bounds in pixels relative to host ---
+          const circles = Array.from(host.querySelectorAll('.node-circle'));
+          const hostRect = host.getBoundingClientRect();
+          const circleBounds = circles.map(c => {
+            const r = c.getBoundingClientRect();
+            return {
+              top: r.top - hostRect.top,
+              bottom: r.bottom - hostRect.top
+            };
+          });
+
           let pageNum = 1;
           let yPx = 0;
 
@@ -2058,9 +2069,25 @@
             const isFirst = (pageNum === 1);
             const currentHeaderH = isFirst ? headerH : headerHSmall;
             const usableH = pageHeight - currentHeaderH - footerH;
-            const usableHPx = Math.floor(usableH / mmPerPx);
+            let usableHPx = Math.floor(usableH / mmPerPx);
             
+            // --- SMART SLICE: Avoid cutting circles ---
+            const targetBottomPx = yPx + usableHPx;
+            if (targetBottomPx < canvas.height) {
+              // Find if any circle intersects the cut
+              const intersection = circleBounds.find(b => b.top < targetBottomPx && b.bottom > targetBottomPx);
+              if (intersection) {
+                // Adjust slice height to cut ABOVE the circle
+                usableHPx = Math.floor(intersection.top - yPx);
+              }
+            }
+
             const sliceHpx = Math.min(usableHPx, canvas.height - yPx);
+            if (sliceHpx <= 0) {
+              // Safety break if slice is too small (shouldn't happen with normal circles)
+              yPx += usableHPx || 100;
+              continue;
+            }
 
             // Build a per-page slice canvas
             const sliceCanvas = document.createElement('canvas');
@@ -2087,22 +2114,23 @@
             // Footer (image)
             pdf.addImage(footerImg, 'PNG', 0, pageHeight - footerH, pageWidth, footerH);
 
-            // Page number (format changed to ($pageNumber))
+            // Page number (Top Left format: (1))
             try {
-              pdf.setFontSize(9);
+              pdf.setFontSize(10);
               pdf.setTextColor(0, 0, 0);
-              pdf.text(`(${pageNum}$)`, 10, pageHeight - 3);
+              pdf.text(`(${pageNum})`, 10, 8); 
             } catch { }
 
             yPx += sliceHpx;
             pageNum++;
             if (yPx < canvas.height) pdf.addPage();
           }
+          
+          // Improved mobile viewing: using dataurlnewwindow or direct blob
+          // To strictly avoid "File Downloaded", opening a new window with a data URL or blob is best.
+          // However, for large PDFs, blob is safer. We'll stick with blob but ensure it uses window.open.
           const blob = pdf.output('blob');
           const url = URL.createObjectURL(blob); 
-          
-          // For mobile, we use window.open or a direct navigation to the blob URL
-          // If in a hybrid app/WebView, this usually triggers the system viewer
           window.open(url, '_blank');
         } catch (e) {
           setStatus(`⚠️ تعذر إنشاء PDF: ${String(e?.message || e)}`);
