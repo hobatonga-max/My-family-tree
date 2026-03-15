@@ -2051,34 +2051,15 @@
         await ensureHtml2Canvas();
 
         const circles = Array.from(host.querySelectorAll('.node-circle'));
-        const lineElements = Array.from(host.querySelectorAll('.vline, .hline'));
-        const hostRect = host.getBoundingClientRect();
-
-        // Calculate the bounding box of all content relative to host
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         
-        [...circles, ...lineElements].forEach(el => {
-          const r = el.getBoundingClientRect();
-          const left = r.left - hostRect.left;
-          const right = r.right - hostRect.left;
-          const top = r.top - hostRect.top;
-          const bottom = r.bottom - hostRect.top;
-          
-          if (left < minX) minX = left;
-          if (right > maxX) maxX = right;
-          if (top < minY) minY = top;
-          if (bottom > maxY) maxY = bottom;
-        });
-
-        // Add padding buffers
-        const padding = 60; 
-        minX = Math.max(0, minX - padding);
-        maxX = maxX + padding;
-        minY = Math.max(0, minY - padding);
-        maxY = maxY + padding;
+        // Force the host to expand to its full content size for capture
+        const originalWidth = host.style.width;
+        const originalHeight = host.style.height;
+        const originalPadding = host.style.padding;
         
-        const captureW = maxX - minX;
-        const captureH = maxY - minY;
+        host.style.width = 'max-content';
+        host.style.height = 'max-content';
+        host.style.padding = '100px'; // Generous buffer
 
         await waitTwoFrames();
 
@@ -2086,24 +2067,22 @@
           backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
-          x: minX,
-          y: minY,
-          width: captureW,
-          height: captureH,
           scrollX: 0,
           scrollY: 0,
-          windowWidth: host.scrollWidth + 500 // ensure enough window space for rendering
+          onclone: (clonedDoc) => {
+            const h = clonedDoc.getElementById('treeHost');
+            if (h) {
+              h.style.width = 'max-content';
+              h.style.height = 'max-content';
+              h.style.display = 'inline-block';
+            }
+          }
         });
 
-        // Use the same minX for circle detection alignment
-        const canvasScale = canvas.width / captureW;
-        const circleBounds = circles.map(c => {
-          const r = c.getBoundingClientRect();
-          return {
-            top: (r.top - hostRect.top - minY) * canvasScale,
-            bottom: (r.bottom - hostRect.top - minY) * canvasScale
-          };
-        });
+        // Restore original styles
+        host.style.width = originalWidth;
+        host.style.height = originalHeight;
+        host.style.padding = originalPadding;
 
         // Header Image (consistent for preview and PDF)
         const headerCanvas = document.createElement('canvas');
@@ -2157,14 +2136,26 @@
         }
         const footerImg = footerCanvas.toDataURL('image/png');
 
-        const pdfMock = { internal: { pageSize: { getWidth: () => 210, getHeight: () => 297 } } };
         const pageWidth = 210;
         const pageHeight = 297;
         const headerH = 14;
         const headerHSmall = 6;
         const footerH = 10;
-        const imgWidthMm = pageWidth;
-        const mmPerPx = imgWidthMm / canvas.width;
+        const mmPerPx = pageWidth / canvas.width;
+
+        const hostRect = host.getBoundingClientRect();
+        
+        // Recalculate circle bounds relative to the captured canvas pixels
+        const circleBounds = circles.map(c => {
+          const r = c.getBoundingClientRect();
+          const topInHost = r.top - hostRect.top;
+          const bottomInHost = r.bottom - hostRect.top;
+          // Map logical host pixels to canvas pixels
+          return {
+            top: topInHost * (canvas.height / host.offsetHeight),
+            bottom: bottomInHost * (canvas.height / host.offsetHeight)
+          };
+        });
 
         const pages = [];
         let yPx = 0;
