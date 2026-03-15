@@ -1929,13 +1929,16 @@
       }
 
       function openPdfDirect(url) {
-        // Open in a new tab using an anchor click to avoid replacing the current page.
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // Optimizing for mobile: direct window.open or location.href
+        // avoids the background "File Downloaded" toast in most cases
+        try {
+          const win = window.open(url, '_blank');
+          if (!win || win.closed || typeof win.closed === 'undefined') {
+            throw new Error('Popup blocked');
+          }
+        } catch {
+          window.location.href = url;
+        }
       }
 
       async function printTreeToPdfCurrent() {
@@ -1945,36 +1948,32 @@
           const host = $('treeHost');
           if (!host || !host.firstElementChild) {
             setStatus('⚠️ لا توجد شجرة لطباعتها الآن.');
-
             return;
           }
 
           await ensureHtml2Canvas();
           await ensureJsPdf();
 
-          // Option B: print CURRENT VIEW only (no auto-expand)
           renderTree();
           
-          // Add padding to the right so the tree doesn't start at the very edge
           const originalPaddingRight = host.style.paddingRight;
           host.style.paddingRight = '50px';
 
-          await waitTwoFrames(); // ensures connector lines are drawn (requestAnimationFrame)
+          await waitTwoFrames(); 
 
           const canvas = await html2canvas(host, {
             backgroundColor: '#ffffff',
-            scale: 2,          // sharper text/lines
+            scale: 2,          
             useCORS: true,
             scrollX: 0,
             scrollY: 0
           });
 
-          // Restore padding
           host.style.paddingRight = originalPaddingRight;
 
           const imgData = canvas.toDataURL('image/jpeg', 0.92);
 
-          // --- Header (Arabic, rendered as image to preserve shaping) ---
+          // Header Image
           const headerCanvas = document.createElement('canvas');
           headerCanvas.width = 2000;
           headerCanvas.height = 220;
@@ -1983,22 +1982,16 @@
           if (hctx) {
             hctx.fillStyle = '#ffffff';
             hctx.fillRect(0, 0, headerCanvas.width, headerCanvas.height);
-            // Title on the LEFT side, date on the RIGHT side (visual layout)
             hctx.fillStyle = '#000000';
             hctx.textBaseline = 'middle';
-
-            // Title centered, date on the LEFT side
             hctx.font = 'bold 72px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
             hctx.textAlign = 'center';
-            hctx.direction = 'rtl'; // keep Arabic shaping
+            hctx.direction = 'rtl';
             hctx.fillText('شجرة العائلة', headerCanvas.width / 2, 110);
-
-
-            // Underline (drawn under the title)
             try {
               const t = hctx.measureText('شجرة العائلة');
               const w = t.width || 0;
-              const yLine = 110 + 44; // a bit below the baseline
+              const yLine = 110 + 44;
               hctx.strokeStyle = '#000000';
               hctx.lineWidth = 6;
               hctx.beginPath();
@@ -2013,7 +2006,7 @@
           }
           const headerImg = headerCanvas.toDataURL('image/png');
 
-          // --- Footer (Arabic, rendered as image to preserve shaping) ---
+          // Footer Image
           const footerCanvas = document.createElement('canvas');
           footerCanvas.width = 2000;
           footerCanvas.height = 220;
@@ -2021,22 +2014,16 @@
           if (fctx) {
             fctx.fillStyle = '#ffffff';
             fctx.fillRect(0, 0, footerCanvas.width, footerCanvas.height);
-
-            // Footer text (far LEFT in the PDF)
-            // Render as IMAGE to preserve Arabic shaping.
-            const x = 60;                 // left margin inside footer image
+            const x = 60;
             fctx.fillStyle = '#000000';
             fctx.textAlign = 'left';
             fctx.direction = 'rtl';
-
             fctx.font = 'bold 26px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
             fctx.fillText('تم تطويره بواسطة: ايهاب عثمان تونجا', x, 85);
-
             fctx.font = 'bold 24px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
             fctx.fillText('حقوق النسخ محفوظة', x, 125);
           }
           const footerImg = footerCanvas.toDataURL('image/png');
-
 
           const { jsPDF } = window.jspdf;
           const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
@@ -2044,21 +2031,22 @@
           const pageWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
 
-          const headerH = 14; // mm (with title)
-          const headerHSmall = 6; // mm (minimal margin for subsequent pages)
-          const footerH = 10; // mm
+          const headerH = 14; 
+          const headerHSmall = 6; 
+          const footerH = 10; 
           
           const imgWidthMm = pageWidth;
           const mmPerPx = imgWidthMm / canvas.width;
 
-          // --- Pre-calculate circle bounds in pixels relative to host ---
+          // Robust circle detection with scale factor
           const circles = Array.from(host.querySelectorAll('.node-circle'));
           const hostRect = host.getBoundingClientRect();
+          const canvasScale = canvas.width / host.offsetWidth; 
           const circleBounds = circles.map(c => {
             const r = c.getBoundingClientRect();
             return {
-              top: r.top - hostRect.top,
-              bottom: r.bottom - hostRect.top
+              top: (r.top - hostRect.top) * canvasScale,
+              bottom: (r.bottom - hostRect.top) * canvasScale
             };
           });
 
@@ -2071,25 +2059,18 @@
             const usableH = pageHeight - currentHeaderH - footerH;
             let usableHPx = Math.floor(usableH / mmPerPx);
             
-            // --- SMART SLICE: Avoid cutting circles ---
-            const targetBottomPx = yPx + usableHPx;
+            // Smart Slicing Loop: ensures no cut circles
+            let targetBottomPx = yPx + usableHPx;
             if (targetBottomPx < canvas.height) {
-              // Find if any circle intersects the cut
-              const intersection = circleBounds.find(b => b.top < targetBottomPx && b.bottom > targetBottomPx);
-              if (intersection) {
-                // Adjust slice height to cut ABOVE the circle
-                usableHPx = Math.floor(intersection.top - yPx);
+              const intersections = circleBounds.filter(b => b.top < targetBottomPx && b.bottom > targetBottomPx);
+              if (intersections.length) {
+                const highestTop = Math.min(...intersections.map(b => b.top));
+                usableHPx = Math.floor(highestTop - yPx);
               }
             }
 
-            const sliceHpx = Math.min(usableHPx, canvas.height - yPx);
-            if (sliceHpx <= 0) {
-              // Safety break if slice is too small (shouldn't happen with normal circles)
-              yPx += usableHPx || 100;
-              continue;
-            }
+            const sliceHpx = Math.max(1, Math.min(usableHPx, canvas.height - yPx));
 
-            // Build a per-page slice canvas
             const sliceCanvas = document.createElement('canvas');
             sliceCanvas.width = canvas.width;
             sliceCanvas.height = sliceHpx;
@@ -2102,19 +2083,14 @@
 
             const sliceData = sliceCanvas.toDataURL('image/png');
 
-            // Header - Only show full header with title on first page
             if (isFirst) {
               pdf.addImage(headerImg, 'PNG', 0, 0, pageWidth, headerH);
             }
 
-            // Slice image below header
             const sliceHmm = sliceHpx * mmPerPx;
             pdf.addImage(sliceData, 'PNG', 0, currentHeaderH, imgWidthMm, sliceHmm);
-
-            // Footer (image)
             pdf.addImage(footerImg, 'PNG', 0, pageHeight - footerH, pageWidth, footerH);
 
-            // Page number (Top Left format: (1))
             try {
               pdf.setFontSize(10);
               pdf.setTextColor(0, 0, 0);
@@ -2126,15 +2102,11 @@
             if (yPx < canvas.height) pdf.addPage();
           }
           
-          // Improved mobile viewing: using dataurlnewwindow or direct blob
-          // To strictly avoid "File Downloaded", opening a new window with a data URL or blob is best.
-          // However, for large PDFs, blob is safer. We'll stick with blob but ensure it uses window.open.
           const blob = pdf.output('blob');
           const url = URL.createObjectURL(blob); 
-          window.open(url, '_blank');
+          openPdfDirect(url);
         } catch (e) {
           setStatus(`⚠️ تعذر إنشاء PDF: ${String(e?.message || e)}`);
-
         } finally {
           try { if (btn) btn.disabled = false; } catch { }
         }
