@@ -2021,6 +2021,10 @@
         await loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
       }
 
+      function waitTwoFrames() {
+        return new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+      }
+
       let capturedPages = [];
 
       async function generatePageSlices() {
