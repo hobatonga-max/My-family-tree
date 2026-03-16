@@ -2067,82 +2067,35 @@
         const fullW = host.scrollWidth;
         const fullH = host.scrollHeight;
 
-        const canvas = await html2canvas(host, {
-          backgroundColor: '#ffffff',
-          scale: 2,
-          useCORS: true,
-          width: fullW,
-          height: fullH,
-          windowWidth: fullW + 100,
-          windowHeight: fullH + 100,
-          scrollX: 0,
-          scrollY: 0,
-          onclone: (clonedDoc) => {
-            const h = clonedDoc.getElementById('treeHost');
-            if (h) {
-              h.style.width = fullW + 'px';
-              h.style.height = fullH + 'px';
-              h.style.padding = '120px';
-              h.style.display = 'block';
-            }
-            clonedDoc.documentElement.style.width = (fullW + 200) + 'px';
-            clonedDoc.documentElement.style.height = (fullH + 200) + 'px';
-          }
-        });
-
-        // Restore original styles
+        // Restore original styles (but keep measurements)
         host.style.width = originalWidth;
         host.style.height = originalHeight;
         host.style.padding = originalPadding;
 
-        // ... Header/Footer generation logic ...
+        // Header/Footer pre-render
         const headerCanvas = document.createElement('canvas');
         headerCanvas.width = 2000;
         headerCanvas.height = 220;
         const hctx = headerCanvas.getContext('2d');
         const todayStr = new Date().toISOString().slice(0, 10);
         if (hctx) {
-          hctx.fillStyle = '#ffffff';
-          hctx.fillRect(0, 0, headerCanvas.width, headerCanvas.height);
-          hctx.fillStyle = '#000000';
-          hctx.textBaseline = 'middle';
-          hctx.font = 'bold 72px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
-          hctx.textAlign = 'center';
-          hctx.direction = 'rtl';
-          hctx.fillText('شجرة العائلة', headerCanvas.width / 2, 110);
-          try {
-            const t = hctx.measureText('شجرة العائلة');
-            const w = t.width || 0;
-            const yLine = 110 + 44;
-            hctx.strokeStyle = '#000000';
-            hctx.lineWidth = 6;
-            hctx.beginPath();
-            hctx.moveTo((headerCanvas.width / 2) - (w / 2), yLine);
-            hctx.lineTo((headerCanvas.width / 2) + (w / 2), yLine);
-            hctx.stroke();
-          } catch { }
-          hctx.font = 'bold 46px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
-          hctx.textAlign = 'left';
-          hctx.direction = 'ltr';
+          hctx.fillStyle = '#ffffff'; hctx.fillRect(0, 0, 2000, 220);
+          hctx.fillStyle = '#000000'; hctx.textBaseline = 'middle';
+          hctx.font = 'bold 72px Arial'; hctx.textAlign = 'center'; hctx.direction = 'rtl';
+          hctx.fillText('شجرة العائلة', 1000, 110);
+          hctx.font = 'bold 46px Arial'; hctx.textAlign = 'left'; hctx.direction = 'ltr';
           hctx.fillText(todayStr, 60, 110);
         }
         const headerImg = headerCanvas.toDataURL('image/png');
 
         const footerCanvas = document.createElement('canvas');
-        footerCanvas.width = 2000;
-        footerCanvas.height = 220;
+        footerCanvas.width = 2000; footerCanvas.height = 220;
         const fctx = footerCanvas.getContext('2d');
         if (fctx) {
-          fctx.fillStyle = '#ffffff';
-          fctx.fillRect(0, 0, footerCanvas.width, footerCanvas.height);
-          const x = 60;
-          fctx.fillStyle = '#000000';
-          fctx.textAlign = 'left';
-          fctx.direction = 'rtl';
-          fctx.font = 'bold 26px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
-          fctx.fillText('تم تطويره بواسطة: ايهاب عثمان تونجا', x, 85);
-          fctx.font = 'bold 24px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
-          fctx.fillText('حقوق النسخ محفوظة', x, 125);
+          fctx.fillStyle = '#ffffff'; fctx.fillRect(0, 0, 2000, 220);
+          fctx.fillStyle = '#000000'; fctx.textAlign = 'left'; fctx.direction = 'rtl';
+          fctx.font = 'bold 26px Arial'; fctx.fillText('تم تطويره بواسطة: ايهاب عثمان تونجا', 60, 85);
+          fctx.font = 'bold 24px Arial'; fctx.fillText('حقوق النسخ محفوظة', 60, 125);
         }
         const footerImg = footerCanvas.toDataURL('image/png');
 
@@ -2152,28 +2105,24 @@
         const headerHSmall = 6;
         const footerH = 10;
         
-        // LIMIT SCALE: Don't zoom in too much on narrow trees (fixes "Big Circles")
-        // Standard 96 DPI is ~0.2645 mm per pixel. Divide by 2 because canvas scale is 2.
-        const maxMmPerPx = 0.264583 / 1.5; // Slightly larger than 96dpi to look good
-        let mmPerPx = pageWidth / canvas.width;
+        const maxMmPerPx = 0.20; // Slightly more zoomed out than before
+        let mmPerPx = pageWidth / fullW;
         if (mmPerPx > maxMmPerPx) mmPerPx = maxMmPerPx;
 
-        // Calculate page width in pixels based on our chosen scale
         const pageWpx = Math.round(pageWidth / mmPerPx);
         const pageHpx = Math.round(pageHeight / mmPerPx);
-        const offsetX = Math.floor((pageWpx - canvas.width) / 2);
-
-        const hostRect = host.getBoundingClientRect();
         
-        // Recalculate circle bounds relative to the captured canvas pixels
-        // Since we captured the whole Host, we just map Host-Logical to Canvas-Physical
+        // RTL SAFETY: Offset to the left slightly to ensure right edge has clear space
+        const rtlSafetyPaddingPx = Math.round(30 / mmPerPx); 
+        const offsetX = Math.floor((pageWpx - fullW) / 2) - 10; // Simple center with slight left bias
+
+        // Map circle bounds for slicing
+        const hostRect = host.getBoundingClientRect();
         const circleBounds = circles.map(c => {
           const r = c.getBoundingClientRect();
-          const topInHost = r.top - hostRect.top;
-          const bottomInHost = r.bottom - hostRect.top;
           return {
-            top: topInHost * (canvas.height / host.offsetHeight),
-            bottom: bottomInHost * (canvas.height / host.offsetHeight)
+            top: r.top - hostRect.top,
+            bottom: r.bottom - hostRect.top
           };
         });
 
@@ -2181,79 +2130,77 @@
         let yPx = 0;
         let pNum = 1;
 
-        while (yPx < canvas.height) {
+        while (yPx < fullH) {
           const isFirst = (pNum === 1);
           const currentHeaderH = isFirst ? headerH : headerHSmall;
           const usableH = pageHeight - currentHeaderH - footerH;
           let usableHPx = Math.floor(usableH / mmPerPx);
 
           let targetBottomPx = yPx + usableHPx;
-          if (targetBottomPx < canvas.height) {
+          if (targetBottomPx < fullH) {
             const intersections = circleBounds.filter(b => b.top < targetBottomPx && b.bottom > targetBottomPx);
             if (intersections.length) {
               const highestTop = Math.min(...intersections.map(b => b.top));
-              // Ensure we actually make progress
-              if (highestTop > yPx + 10) {
-                 usableHPx = Math.floor(highestTop - yPx);
-              }
+              if (highestTop > yPx + 10) usableHPx = Math.floor(highestTop - yPx);
             }
           }
 
-          const sliceHpx = Math.max(1, Math.min(usableHPx, canvas.height - yPx));
-          const sliceCanvas = document.createElement('canvas');
-          sliceCanvas.width = canvas.width;
-          sliceCanvas.height = sliceHpx;
-          const sctx = sliceCanvas.getContext('2d');
-          if (sctx) {
-            sctx.fillStyle = '#ffffff';
-            sctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-            sctx.drawImage(canvas, 0, yPx, canvas.width, sliceHpx, 0, 0, canvas.width, sliceHpx);
-          }
+          const sliceHpx = Math.max(1, Math.min(usableHPx, fullH - yPx));
+          
+          // INCREMENTAL CAPTURE: One capture per slice
+          const sliceCanvas = await html2canvas(host, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true,
+            x: 0,
+            y: yPx,
+            width: fullW,
+            height: sliceHpx,
+            windowWidth: fullW + 100,
+            windowHeight: fullH + 100,
+            onclone: (clonedDoc) => {
+              const h = clonedDoc.getElementById('treeHost');
+              if (h) {
+                h.style.width = fullW + 'px';
+                h.style.height = fullH + 'px';
+                h.style.padding = '120px';
+                h.style.display = 'block';
+              }
+            }
+          });
 
-          // Build a full "Page" as a single image for the preview
+          // Build Page
           const finalPageCanvas = document.createElement('canvas');
           finalPageCanvas.width = pageWpx;
           finalPageCanvas.height = pageHpx;
           const pctx = finalPageCanvas.getContext('2d');
           if (pctx) {
             pctx.fillStyle = '#ffffff';
-            pctx.fillRect(0, 0, finalPageCanvas.width, finalPageCanvas.height);
+            pctx.fillRect(0, 0, pageWpx, pageHpx);
 
-            // Add Header
-            const hImg = new Image();
-            hImg.src = headerImg;
+            // Header
+            const hImg = new Image(); hImg.src = headerImg;
             await new Promise(r => hImg.onload = r);
             const drawH = Math.round((isFirst ? headerH : headerHSmall) / mmPerPx);
-            pctx.drawImage(hImg, 0, 0, finalPageCanvas.width, drawH);
+            pctx.drawImage(hImg, 0, 0, pageWpx, drawH);
 
-            // Add Slice (Centered)
-            const sImg = new Image();
-            sImg.src = sliceCanvas.toDataURL('image/png');
-            await new Promise(r => sImg.onload = r);
-            pctx.drawImage(sImg, offsetX, Math.round(currentHeaderH / mmPerPx), canvas.width, sliceHpx);
+            // Slice (Centered + RTL adjust)
+            pctx.drawImage(sliceCanvas, offsetX, Math.round(currentHeaderH / mmPerPx), fullW, sliceHpx);
 
-            // Add Footer
-            const fImg = new Image();
-            fImg.src = footerImg;
+            // Footer
+            const fImg = new Image(); fImg.src = footerImg;
             await new Promise(r => fImg.onload = r);
-            pctx.drawImage(fImg, 0, finalPageCanvas.height - Math.round(footerH / mmPerPx), finalPageCanvas.width, Math.round(footerH / mmPerPx));
+            const drawFH = Math.round(footerH / mmPerPx);
+            pctx.drawImage(fImg, 0, pageHpx - drawFH, pageWpx, drawFH);
 
-            // Add Page Number
-            pctx.font = 'bold 36px Arial';
-            pctx.fillStyle = '#000000';
+            // Page #
+            pctx.font = 'bold 36px Arial'; pctx.fillStyle = '#000000';
             pctx.fillText(`(${pNum})`, Math.round(10 / mmPerPx), Math.round(8 / mmPerPx));
           }
 
-          pages.push({
-            dataUrl: finalPageCanvas.toDataURL('image/png'),
-            pageNum: pNum,
-            isFirst
-          });
-
+          pages.push({ dataUrl: finalPageCanvas.toDataURL('image/png'), pageNum: pNum });
           yPx += sliceHpx;
           pNum++;
-          
-          // Safety break to prevent infinite loops if something goes wrong
           if (pNum > 100) break;
         }
         return pages;
