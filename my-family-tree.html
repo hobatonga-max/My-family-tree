@@ -802,13 +802,14 @@
 
     #previewContent {
       flex: 1;
-      overflow-y: auto;
-      padding: 40px 20px;
+      overflow: auto; /* Allow both vertical and horizontal scroll */
+      padding: 40px 10px;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start; /* Align to the right in RTL so it's not clipped on the right */
       gap: 30px;
       background: #f1f5f9;
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling for mobile */
     }
 
     .preview-page {
@@ -2059,7 +2060,7 @@
         
         host.style.width = 'max-content';
         host.style.height = 'max-content';
-        host.style.padding = '120px'; // Extra buffer for all edges
+        host.style.padding = '180px'; // Increased horizontal padding for RTL safety
 
         await waitTwoFrames();
 
@@ -2071,11 +2072,10 @@
         host.style.width = originalWidth;
         host.style.height = originalHeight;
         host.style.padding = originalPadding;
-
+        
         // Header/Footer pre-render
         const headerCanvas = document.createElement('canvas');
-        headerCanvas.width = 2000;
-        headerCanvas.height = 220;
+        headerCanvas.width = 2000; headerCanvas.height = 220;
         const hctx = headerCanvas.getContext('2d');
         const todayStr = new Date().toISOString().slice(0, 10);
         if (hctx) {
@@ -2105,16 +2105,15 @@
         const headerHSmall = 6;
         const footerH = 10;
         
-        const maxMmPerPx = 0.20; // Slightly more zoomed out than before
+        // Ensure mmPerPx fits the full measured width accurately
+        const maxMmPerPx = 0.22; 
         let mmPerPx = pageWidth / fullW;
         if (mmPerPx > maxMmPerPx) mmPerPx = maxMmPerPx;
 
         const pageWpx = Math.round(pageWidth / mmPerPx);
         const pageHpx = Math.round(pageHeight / mmPerPx);
         
-        // RTL SAFETY: Offset to the left slightly to ensure right edge has clear space
-        const rtlSafetyPaddingPx = Math.round(30 / mmPerPx); 
-        const offsetX = Math.floor((pageWpx - fullW) / 2) - 10; // Simple center with slight left bias
+        const offsetX = Math.max(0, Math.floor((pageWpx - fullW) / 2)); 
 
         // Map circle bounds for slicing
         const hostRect = host.getBoundingClientRect();
@@ -2163,7 +2162,7 @@
               if (h) {
                 h.style.width = fullW + 'px';
                 h.style.height = fullH + 'px';
-                h.style.padding = '120px';
+                h.style.padding = '180px'; // Matching the measurement padding
                 h.style.display = 'block';
               }
             }
