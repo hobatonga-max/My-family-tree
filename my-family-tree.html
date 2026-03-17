@@ -750,8 +750,10 @@
 
     #pageScroll .wrap {
       direction: rtl !important;
-      /* content stays RTL */
-      display: inline-block !important;
+      /* Using flex centering to pull content to middle of screen */
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
       width: max-content !important;
       min-width: 100% !important;
       max-width: none !important;
@@ -768,15 +770,15 @@
       touch-action: manipulation;
     }
 
-    /* Standard wrapper padding for web view (no massive blank area) */
+    /* Standard wrapper padding - centering handles the professional look */
     #pageScroll .wrap {
       padding-right: 20px !important;
       padding-left: 20px !important;
     }
 
-    /* Isolated tree gutter: allows the tree to grow right (+) without pushing the header/sidebar */
+    /* Isolated tree gutter: reduced to 40px to remove the large blank gap */
     #treeHost {
-      padding-right: 250px !important; /* Expansion room only for the tree */
+      padding-right: 40px !important;
     }
     /* ===== Print Preview Overlay ===== */
     #printPreviewOverlay {
@@ -2065,20 +2067,32 @@
 
         const circles = Array.from(host.querySelectorAll('.node-circle'));
         
-        // Force the host to expand to its full content size to measure it
+        // --- 1. SET UNIFORM CAPTURE PADDING (for both Measurement and Capture) ---
+        const CAPTURE_PADDING = '100px'; 
         const originalWidth = host.style.width;
         const originalHeight = host.style.height;
         const originalPadding = host.style.padding;
         
+        // Apply capture padding temporarily to measure
         host.style.width = 'max-content';
         host.style.height = 'max-content';
-        host.style.padding = '180px'; // Increased horizontal padding for RTL safety
+        host.style.padding = CAPTURE_PADDING;
 
         await waitTwoFrames();
 
-        // MEASURE FULL DIMENSIONS
+        // --- 2. MEASURE REAL DIMENSIONS WITH PADDING ---
         const fullW = host.scrollWidth;
         const fullH = host.scrollHeight;
+        const hostRect = host.getBoundingClientRect(); 
+
+        // Map circle bounds accurately relative to the padded container
+        const circleBounds = circles.map(c => {
+          const r = c.getBoundingClientRect();
+          return {
+            top: r.top - hostRect.top,
+            bottom: r.bottom - hostRect.top
+          };
+        });
 
         // Restore original styles (but keep measurements)
         host.style.width = originalWidth;
@@ -2127,16 +2141,6 @@
         
         const offsetX = Math.max(0, Math.floor((pageWpx - fullW) / 2)); 
 
-        // Map circle bounds for slicing
-        const hostRect = host.getBoundingClientRect();
-        const circleBounds = circles.map(c => {
-          const r = c.getBoundingClientRect();
-          return {
-            top: r.top - hostRect.top,
-            bottom: r.bottom - hostRect.top
-          };
-        });
-
         const pages = [];
         let yPx = 0;
         let pNum = 1;
@@ -2174,8 +2178,20 @@
               if (h) {
                 h.style.width = fullW + 'px';
                 h.style.height = fullH + 'px';
-                h.style.padding = '180px'; // Matching the measurement padding
+                h.style.padding = CAPTURE_PADDING; // MATCH THE MEASUREMENT
                 h.style.display = 'block';
+
+                // CRITICAL: Disable flex centering in the clone to avoid coordinate shifts
+                // Find all parent wrappers and ensure they aren't centering the tree.
+                let curr = h.parentElement;
+                while(curr) {
+                  if (curr.classList && (curr.classList.contains('wrap') || curr.classList.contains('maincol'))) {
+                    curr.style.display = 'block';
+                    curr.style.textAlign = 'right'; // Standard RTL
+                    curr.style.width = 'max-content';
+                  }
+                  curr = curr.parentElement;
+                }
               }
             }
           });
