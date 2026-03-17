@@ -750,8 +750,10 @@
 
     #pageScroll .wrap {
       direction: rtl !important;
-      /* content stays RTL */
-      display: inline-block !important;
+      /* Using flex centering to pull content to middle of screen */
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
       width: max-content !important;
       min-width: 100% !important;
       max-width: none !important;
@@ -768,15 +770,15 @@
       touch-action: manipulation;
     }
 
-    /* Standard wrapper padding for web view (no massive blank area) */
+    /* Standard wrapper padding - centering handles the professional look */
     #pageScroll .wrap {
       padding-right: 20px !important;
       padding-left: 20px !important;
     }
 
-    /* Isolated tree gutter: allows the tree to grow right (+) without pushing the header/sidebar */
+    /* Isolated tree gutter: reduced to 40px to remove the large blank gap */
     #treeHost {
-      padding-right: 250px !important; /* Expansion room only for the tree */
+      padding-right: 40px !important;
     }
     /* ===== Print Preview Overlay ===== */
     #printPreviewOverlay {
