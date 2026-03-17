@@ -2065,27 +2065,24 @@
 
         await ensureHtml2Canvas();
 
-        const circles = Array.from(host.querySelectorAll('.node-circle'));
-        
-        // --- 1. SET UNIFORM CAPTURE PADDING (for both Measurement and Capture) ---
+        // 1. MEASUREMENT & PREPARATION
         const CAPTURE_PADDING = '100px'; 
         const originalWidth = host.style.width;
         const originalHeight = host.style.height;
         const originalPadding = host.style.padding;
         
-        // Apply capture padding temporarily to measure
+        // Temporarily expand for measurement
         host.style.width = 'max-content';
         host.style.height = 'max-content';
         host.style.padding = CAPTURE_PADDING;
-
         await waitTwoFrames();
 
-        // --- 2. MEASURE REAL DIMENSIONS WITH PADDING ---
         const fullW = host.scrollWidth;
         const fullH = host.scrollHeight;
         const hostRect = host.getBoundingClientRect(); 
-
-        // Map circle bounds accurately relative to the padded container
+        const circles = Array.from(host.querySelectorAll('.node-circle'));
+        
+        // Map circle bounds for collision detection
         const circleBounds = circles.map(c => {
           const r = c.getBoundingClientRect();
           return {
@@ -2094,26 +2091,70 @@
           };
         });
 
-        // Restore original styles (but keep measurements)
+        // 2. SINGLE CAPTURE (The "Mega-Canvas")
+        // This is the most reliable way to ensure no slicing offsets or blank pages.
+        const fullTreeCanvas = await html2canvas(host, {
+          backgroundColor: '#ffffff',
+          scale: 2, // High quality
+          useCORS: true,
+          width: fullW,
+          height: fullH,
+          onclone: (clonedDoc) => {
+            const h = clonedDoc.getElementById('treeHost');
+            if (h) {
+              h.style.width = fullW + 'px';
+              h.style.height = fullH + 'px';
+              h.style.padding = CAPTURE_PADDING;
+              h.style.display = 'block';
+              // Standard layout for capture
+              let curr = h.parentElement;
+              while(curr) {
+                if (curr.classList && (curr.classList.contains('wrap') || curr.classList.contains('maincol'))) {
+                  curr.style.display = 'block';
+                  curr.style.textAlign = 'right';
+                  curr.style.width = 'max-content';
+                }
+                curr = curr.parentElement;
+              }
+            }
+          }
+        });
+
+        // Restore original site layout
         host.style.width = originalWidth;
         host.style.height = originalHeight;
         host.style.padding = originalPadding;
-        
-        // Header/Footer pre-render
-        const headerCanvas = document.createElement('canvas');
-        headerCanvas.width = 2000; headerCanvas.height = 220;
-        const hctx = headerCanvas.getContext('2d');
-        const todayStr = new Date().toISOString().slice(0, 10);
-        if (hctx) {
-          hctx.fillStyle = '#ffffff'; hctx.fillRect(0, 0, 2000, 220);
-          hctx.fillStyle = '#000000'; hctx.textBaseline = 'middle';
-          hctx.font = 'bold 72px Arial'; hctx.textAlign = 'center'; hctx.direction = 'rtl';
-          hctx.fillText('شجرة العائلة', 1000, 110);
-          hctx.font = 'bold 46px Arial'; hctx.textAlign = 'left'; hctx.direction = 'ltr';
-          hctx.fillText(todayStr, 60, 110);
-        }
-        const headerImg = headerCanvas.toDataURL('image/png');
 
+        // 3. PAGE SLICING (In-Memory Canvas Slicing)
+        const pageWidth = 210; // mm
+        const pageHeight = 297; // mm
+        const headerH = 14; 
+        const headerHSmall = 6;
+        const footerH = 10;
+        
+        const maxMmPerPx = 0.22; 
+        let mmPerPx = pageWidth / fullW;
+        if (mmPerPx > maxMmPerPx) mmPerPx = maxMmPerPx;
+
+        const pageWpx = Math.round(pageWidth / mmPerPx);
+        const pageHpx = Math.round(pageHeight / mmPerPx);
+        const offsetX = Math.max(0, Math.floor((pageWpx - fullW) / 2));
+
+        // Pre-render Header/Footer
+        const createHeader = (isFirst) => {
+          const c = document.createElement('canvas');
+          c.width = 2000; c.height = 220;
+          const ctx = c.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 2000, 220);
+            ctx.fillStyle = '#000000'; ctx.textBaseline = 'middle';
+            ctx.font = 'bold 72px Arial'; ctx.textAlign = 'center'; ctx.direction = 'rtl';
+            ctx.fillText('شجرة العائلة', 1000, 110);
+            ctx.font = 'bold 46px Arial'; ctx.textAlign = 'left'; ctx.direction = 'ltr';
+            ctx.fillText(new Date().toISOString().slice(0, 10), 60, 110);
+          }
+          return c;
+        };
         const footerCanvas = document.createElement('canvas');
         footerCanvas.width = 2000; footerCanvas.height = 220;
         const fctx = footerCanvas.getContext('2d');
@@ -2123,23 +2164,6 @@
           fctx.font = 'bold 26px Arial'; fctx.fillText('تم تطويره بواسطة: ايهاب عثمان تونجا', 60, 85);
           fctx.font = 'bold 24px Arial'; fctx.fillText('حقوق النسخ محفوظة', 60, 125);
         }
-        const footerImg = footerCanvas.toDataURL('image/png');
-
-        const pageWidth = 210;
-        const pageHeight = 297;
-        const headerH = 14;
-        const headerHSmall = 6;
-        const footerH = 10;
-        
-        // Ensure mmPerPx fits the full measured width accurately
-        const maxMmPerPx = 0.22; 
-        let mmPerPx = pageWidth / fullW;
-        if (mmPerPx > maxMmPerPx) mmPerPx = maxMmPerPx;
-
-        const pageWpx = Math.round(pageWidth / mmPerPx);
-        const pageHpx = Math.round(pageHeight / mmPerPx);
-        
-        const offsetX = Math.max(0, Math.floor((pageWpx - fullW) / 2)); 
 
         const pages = [];
         let yPx = 0;
@@ -2153,50 +2177,16 @@
 
           let targetBottomPx = yPx + usableHPx;
           if (targetBottomPx < fullH) {
-            const intersections = circleBounds.filter(b => b.top < targetBottomPx && b.bottom > targetBottomPx);
+            const buffer = 15; // px safety
+            const intersections = circleBounds.filter(b => b.top < targetBottomPx + buffer && b.bottom > targetBottomPx - buffer);
             if (intersections.length) {
               const highestTop = Math.min(...intersections.map(b => b.top));
-              if (highestTop > yPx + 10) usableHPx = Math.floor(highestTop - yPx);
+              if (highestTop > yPx + 20) usableHPx = Math.floor(highestTop - yPx - 10);
             }
           }
 
           const sliceHpx = Math.max(1, Math.min(usableHPx, fullH - yPx));
-          
-          // INCREMENTAL CAPTURE: One capture per slice
-          const sliceCanvas = await html2canvas(host, {
-            backgroundColor: '#ffffff',
-            scale: 2,
-            useCORS: true,
-            x: 0,
-            y: yPx,
-            width: fullW,
-            height: sliceHpx,
-            windowWidth: fullW + 100,
-            windowHeight: fullH + 100,
-            onclone: (clonedDoc) => {
-              const h = clonedDoc.getElementById('treeHost');
-              if (h) {
-                h.style.width = fullW + 'px';
-                h.style.height = fullH + 'px';
-                h.style.padding = CAPTURE_PADDING; // MATCH THE MEASUREMENT
-                h.style.display = 'block';
 
-                // CRITICAL: Disable flex centering in the clone to avoid coordinate shifts
-                // Find all parent wrappers and ensure they aren't centering the tree.
-                let curr = h.parentElement;
-                while(curr) {
-                  if (curr.classList && (curr.classList.contains('wrap') || curr.classList.contains('maincol'))) {
-                    curr.style.display = 'block';
-                    curr.style.textAlign = 'right'; // Standard RTL
-                    curr.style.width = 'max-content';
-                  }
-                  curr = curr.parentElement;
-                }
-              }
-            }
-          });
-
-          // Build Page
           const finalPageCanvas = document.createElement('canvas');
           finalPageCanvas.width = pageWpx;
           finalPageCanvas.height = pageHpx;
@@ -2205,24 +2195,25 @@
             pctx.fillStyle = '#ffffff';
             pctx.fillRect(0, 0, pageWpx, pageHpx);
 
-            // Header
-            const hImg = new Image(); hImg.src = headerImg;
-            await new Promise(r => hImg.onload = r);
-            const drawH = Math.round((isFirst ? headerH : headerHSmall) / mmPerPx);
-            pctx.drawImage(hImg, 0, 0, pageWpx, drawH);
+            // Draw Header
+            const drawH = Math.round(currentHeaderH / mmPerPx);
+            pctx.drawImage(createHeader(isFirst), 0, 0, pageWpx, drawH);
 
-            // Slice (Centered + RTL adjust)
-            pctx.drawImage(sliceCanvas, offsetX, Math.round(currentHeaderH / mmPerPx), fullW, sliceHpx);
+            // Slice from the Mega-Canvas
+            pctx.drawImage(
+              fullTreeCanvas, 
+              0, yPx * 2, fullW * 2, sliceHpx * 2, // Source (Capture is scale 2)
+              offsetX, drawH, fullW, sliceHpx // Destination
+            );
 
-            // Footer
-            const fImg = new Image(); fImg.src = footerImg;
-            await new Promise(r => fImg.onload = r);
+            // Draw Footer
             const drawFH = Math.round(footerH / mmPerPx);
-            pctx.drawImage(fImg, 0, pageHpx - drawFH, pageWpx, drawFH);
+            pctx.drawImage(footerCanvas, 0, pageHpx - drawFH, pageWpx, drawFH);
 
             // Page #
             pctx.font = 'bold 36px Arial'; pctx.fillStyle = '#000000';
-            pctx.fillText(`(${pNum})`, Math.round(10 / mmPerPx), Math.round(8 / mmPerPx));
+            pctx.direction = 'ltr';
+            pctx.fillText(`(${pNum})`, Math.round(15 / mmPerPx), Math.round(10 / mmPerPx));
           }
 
           pages.push({ dataUrl: finalPageCanvas.toDataURL('image/png'), pageNum: pNum });
