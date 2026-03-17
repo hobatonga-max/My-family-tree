@@ -768,10 +768,10 @@
       touch-action: manipulation;
     }
 
-    /* Give extra gutter so outside-left toggle isn't clipped */
+    /* Give extra gutter so expansion on the right (Start of RTL) isn't clipped or unreachable */
     #pageScroll .wrap {
-      padding-left: 170px !important;
-      padding-right: 20px !important;
+      padding-right: 250px !important; /* Start padding for RTL safety */
+      padding-left: 20px !important;
     }
     /* ===== Print Preview Overlay ===== */
     #printPreviewOverlay {
@@ -835,21 +835,24 @@
     }
 
     @media print {
-      body * {
-        visibility: hidden !important;
+      body {
+        overflow: visible !important;
+        height: auto !important;
+        background: #fff;
       }
 
-      #printPreviewOverlay,
-      #printPreviewOverlay * {
-        visibility: visible !important;
+      /* Hide EVERYTHING except the overlay */
+      body > *:not(#printPreviewOverlay) {
+        display: none !important;
       }
 
       #printPreviewOverlay {
-        position: absolute !important;
-        inset: 0 !important;
+        position: static !important; /* Allow normal flow for multi-page pagination */
         display: block !important;
         background: #fff !important;
         overflow: visible !important;
+        width: 100% !important;
+        height: auto !important;
       }
 
       #printPreviewHeader {
@@ -861,14 +864,18 @@
         background: #fff !important;
         overflow: visible !important;
         display: block !important;
+        width: 100% !important;
+        height: auto !important;
       }
 
       .preview-page {
         width: 210mm !important;
-        margin: 0 !important;
+        height: auto !important;
+        margin: 0 auto !important;
         box-shadow: none !important;
         page-break-after: always !important;
         break-after: page !important;
+        position: static !important; /* No absolute positioning during print */
       }
     }
   </style>
