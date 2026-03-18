@@ -2065,13 +2065,12 @@
 
         await ensureHtml2Canvas();
 
-        // 1. MEASUREMENT & PREPARATION
+        // 1. MEASURE FULL TREE
         const CAPTURE_PADDING = '100px'; 
         const originalWidth = host.style.width;
         const originalHeight = host.style.height;
         const originalPadding = host.style.padding;
         
-        // Temporarily expand for measurement
         host.style.width = 'max-content';
         host.style.height = 'max-content';
         host.style.padding = CAPTURE_PADDING;
@@ -2082,7 +2081,6 @@
         const hostRect = host.getBoundingClientRect(); 
         const circles = Array.from(host.querySelectorAll('.node-circle'));
         
-        // Map circle bounds for collision detection
         const circleBounds = circles.map(c => {
           const r = c.getBoundingClientRect();
           return {
@@ -2091,41 +2089,12 @@
           };
         });
 
-        // 2. SINGLE CAPTURE (The "Mega-Canvas")
-        // This is the most reliable way to ensure no slicing offsets or blank pages.
-        const fullTreeCanvas = await html2canvas(host, {
-          backgroundColor: '#ffffff',
-          scale: 2, // High quality
-          useCORS: true,
-          width: fullW,
-          height: fullH,
-          onclone: (clonedDoc) => {
-            const h = clonedDoc.getElementById('treeHost');
-            if (h) {
-              h.style.width = fullW + 'px';
-              h.style.height = fullH + 'px';
-              h.style.padding = CAPTURE_PADDING;
-              h.style.display = 'block';
-              // Standard layout for capture
-              let curr = h.parentElement;
-              while(curr) {
-                if (curr.classList && (curr.classList.contains('wrap') || curr.classList.contains('maincol'))) {
-                  curr.style.display = 'block';
-                  curr.style.textAlign = 'right';
-                  curr.style.width = 'max-content';
-                }
-                curr = curr.parentElement;
-              }
-            }
-          }
-        });
-
         // Restore original site layout
         host.style.width = originalWidth;
         host.style.height = originalHeight;
         host.style.padding = originalPadding;
 
-        // 3. PAGE SLICING (In-Memory Canvas Slicing)
+        // 2. PAGE CONFIG
         const pageWidth = 210; // mm
         const pageHeight = 297; // mm
         const headerH = 14; 
@@ -2169,6 +2138,7 @@
         let yPx = 0;
         let pNum = 1;
 
+        // 3. INCREMENTAL CAPTURE (One page at a time to avoid mobile canvas limits)
         while (yPx < fullH) {
           const isFirst = (pNum === 1);
           const currentHeaderH = isFirst ? headerH : headerHSmall;
@@ -2177,7 +2147,7 @@
 
           let targetBottomPx = yPx + usableHPx;
           if (targetBottomPx < fullH) {
-            const buffer = 15; // px safety
+            const buffer = 15; 
             const intersections = circleBounds.filter(b => b.top < targetBottomPx + buffer && b.bottom > targetBottomPx - buffer);
             if (intersections.length) {
               const highestTop = Math.min(...intersections.map(b => b.top));
@@ -2187,6 +2157,39 @@
 
           const sliceHpx = Math.max(1, Math.min(usableHPx, fullH - yPx));
 
+          // CAPTURE INDIVIDUAL SLICE (Using transform to move slice to y=0)
+          const sliceCanvas = await html2canvas(host, {
+            backgroundColor: '#ffffff',
+            scale: 2, 
+            useCORS: true,
+            x: 0,
+            y: 0,
+            width: fullW,
+            height: sliceHpx,
+            onclone: (clonedDoc) => {
+              const h = clonedDoc.getElementById('treeHost');
+              if (h) {
+                h.style.width = fullW + 'px';
+                h.style.height = fullH + 'px';
+                h.style.padding = CAPTURE_PADDING;
+                h.style.display = 'block';
+                h.style.transform = `translateY(-${yPx}px)`; // SHIFT SLICE TO TOP
+                h.style.transformOrigin = 'top left';
+
+                // Standard RTL layout to avoid centering interference
+                let curr = h.parentElement;
+                while(curr) {
+                  if (curr.classList && (curr.classList.contains('wrap') || curr.classList.contains('maincol'))) {
+                    curr.style.display = 'block';
+                    curr.style.textAlign = 'right';
+                    curr.style.width = 'max-content';
+                  }
+                  curr = curr.parentElement;
+                }
+              }
+            }
+          });
+
           const finalPageCanvas = document.createElement('canvas');
           finalPageCanvas.width = pageWpx;
           finalPageCanvas.height = pageHpx;
@@ -2195,22 +2198,15 @@
             pctx.fillStyle = '#ffffff';
             pctx.fillRect(0, 0, pageWpx, pageHpx);
 
-            // Draw Header
             const drawH = Math.round(currentHeaderH / mmPerPx);
             pctx.drawImage(createHeader(isFirst), 0, 0, pageWpx, drawH);
 
-            // Slice from the Mega-Canvas
-            pctx.drawImage(
-              fullTreeCanvas, 
-              0, yPx * 2, fullW * 2, sliceHpx * 2, // Source (Capture is scale 2)
-              offsetX, drawH, fullW, sliceHpx // Destination
-            );
+            // Draw the slice (Centered)
+            pctx.drawImage(sliceCanvas, offsetX, drawH, fullW, sliceHpx);
 
-            // Draw Footer
             const drawFH = Math.round(footerH / mmPerPx);
             pctx.drawImage(footerCanvas, 0, pageHpx - drawFH, pageWpx, drawFH);
 
-            // Page #
             pctx.font = 'bold 36px Arial'; pctx.fillStyle = '#000000';
             pctx.direction = 'ltr';
             pctx.fillText(`(${pNum})`, Math.round(15 / mmPerPx), Math.round(10 / mmPerPx));
