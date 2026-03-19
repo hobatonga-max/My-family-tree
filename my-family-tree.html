@@ -2089,10 +2089,7 @@
           };
         });
 
-        // Restore original site layout
-        host.style.width = originalWidth;
-        host.style.height = originalHeight;
-        host.style.padding = originalPadding;
+        // (Layout restoration moved to after the loop for coordinate consistency)
 
         // 2. PAGE CONFIG
         const pageWidth = 210; // mm
@@ -2217,6 +2214,12 @@
           pNum++;
           if (pNum > 100) break;
         }
+
+        // 4. RESTORE ORIGINAL SITE LAYOUT
+        host.style.width = originalWidth;
+        host.style.height = originalHeight;
+        host.style.padding = originalPadding;
+
         return pages;
       }
 
