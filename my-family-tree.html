@@ -2154,13 +2154,13 @@
 
           const sliceHpx = Math.max(1, Math.min(usableHPx, fullH - yPx));
 
-          // CAPTURE INDIVIDUAL SLICE (Using transform to move slice to y=0)
+          // CAPTURE INDIVIDUAL SLICE (Using native y offset)
           const sliceCanvas = await html2canvas(host, {
             backgroundColor: '#ffffff',
             scale: 2, 
             useCORS: true,
             x: 0,
-            y: 0,
+            y: yPx, // THE KEY: Start capture at the current vertical offset
             width: fullW,
             height: sliceHpx,
             onclone: (clonedDoc) => {
@@ -2170,17 +2170,16 @@
                 h.style.height = fullH + 'px';
                 h.style.padding = CAPTURE_PADDING;
                 h.style.display = 'block';
-                h.style.transform = `translateY(-${yPx}px)`; // SHIFT SLICE TO TOP
-                h.style.transformOrigin = 'top left';
+                h.style.transform = 'none'; // Ensure no transform interference
 
-                // Standard RTL layout to avoid centering interference
+                // CRITICAL: Strip all parent layouts to ensure host is at 0,0 relative to capture
                 let curr = h.parentElement;
-                while(curr) {
-                  if (curr.classList && (curr.classList.contains('wrap') || curr.classList.contains('maincol'))) {
-                    curr.style.display = 'block';
-                    curr.style.textAlign = 'right';
-                    curr.style.width = 'max-content';
-                  }
+                while(curr && curr.tagName !== 'BODY') {
+                  curr.style.display = 'block';
+                  curr.style.margin = '0';
+                  curr.style.padding = '0';
+                  curr.style.width = 'max-content';
+                  curr.style.position = 'static';
                   curr = curr.parentElement;
                 }
               }
