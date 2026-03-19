@@ -17,9 +17,6 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
     .header{display:flex;align-items:center;gap:12px}
     .logo{width:48px;height:48px;border-radius:9999px;background:#90c290;display:grid;place-items:center;color:#fff;font-weight:700}
@@ -149,11 +146,10 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 
     /* Tree positioning: right aligned, not glued to the edge */
     #treeHost{
-      display: flex;
-      justify-content: center;
-      padding: 0 40px;
-      width: 100%;
-      box-sizing: border-box;
+      display:flex;
+      justify-content:flex-start;
+      padding-right:40px;
+      width:100%;
     }
 
 /* ===== Circle image (copied from my-family-tree.html) ===== */
@@ -509,24 +505,7 @@ input[placeholder="اسم الشخص"]{
         <button id="searchBtn" class="btn">بحث</button>
         <button id="prevMatchBtn" class="btn" style="display:none">السابق</button>
         <button id="nextMatchBtn" class="btn" style="display:none">التالي</button>
-    <!-- Print Preview Overlay -->
-    <div id="printPreviewOverlay">
-      <div id="printPreviewHeader">
-        <div style="font-weight: bold; font-size: 18px;">معاينة الطباعة</div>
-        <div class="preview-actions">
-          <button id="browserPrintBtn" class="btn" style="background: #2563eb; color: #fff;">طباعة مباشرة</button>
-          <button id="downloadPdfBtn" class="btn">تحميل PDF</button>
-          <button id="closePreviewBtn" class="btn close-preview">إغلاق</button>
-        </div>
-      </div>
-      <div id="previewContent">
-        <!-- Pages will be injected here -->
-      </div>
-    </div>
 
-    <div id="pageScroll" style="height:100vh; overflow-y:auto; -webkit-overflow-scrolling:touch;">
-
-      </div>
 
       <!-- شريط الأدوات (سطر 2: إدارة + بيانات/تصدير) -->
       <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -598,7 +577,7 @@ input[placeholder="اسم الشخص"]{
     </div>
 </div>
 
-    <div id="treeHost" style="margin-top:30px"></div>
+    <div id="treeHost" style="margin-top:16px"></div>
 
     <!-- نافذة تأكيد الحذف -->
     <div id="deleteConfirmModal" style="display:none;position:fixed;inset:0;background:#0006;backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
@@ -1981,5 +1960,19 @@ const parentCY = circleRect.top + circleRect.height/2 - wrapRect.top;
     // Start
     boot();
   </script>
-</body>
+    <!-- Print Preview Overlay -->
+    <div id="printPreviewOverlay">
+      <div id="printPreviewHeader">
+        <div style="font-weight: bold; font-size: 18px;">معاينة الطباعة</div>
+        <div class="preview-actions">
+          <button id="browserPrintBtn" class="btn" style="background: #2563eb; color: #fff;">طباعة مباشرة</button>
+          <button id="downloadPdfBtn" class="btn">تحميل PDF</button>
+          <button id="closePreviewBtn" class="btn close-preview">إغلاق</button>
+        </div>
+      </div>
+      <div id="previewContent">
+        <!-- Pages will be injected here -->
+      </div>
+    </div>
+  </body>
 </html>
