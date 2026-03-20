@@ -14,7 +14,6 @@
     <div id="printPreviewHeader">
       <div style="font-weight: bold; font-size: 18px;">معاينة الطباعة</div>
       <div class="preview-actions">
-        <button id="browserPrintBtn" class="btn" style="background: #2563eb; color: #fff;">طباعة مباشرة</button>
         <button id="downloadPdfBtn" class="btn">تحميل PDF</button>
         <button id="closePreviewBtn" class="btn close-preview">إغلاق</button>
       </div>
@@ -397,7 +396,7 @@
       max-width: 320px !important;
       min-width: 310px !important;
       width: fit-content !important;
-      margin: 12px auto !important;
+      margin: 12px 0 !important;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
       display: block !important;
       padding: 12px !important;
@@ -772,7 +771,7 @@
 
     /* Standard wrapper padding - centering handles the professional look */
     #pageScroll .wrap {
-      padding-right: 20px !important;
+      padding-right: 0 !important;
       padding-left: 20px !important;
     }
 
@@ -2203,7 +2202,7 @@
             const drawFH = Math.round(footerH / mmPerPx);
             pctx.drawImage(footerCanvas, 0, pageHpx - drawFH, pageWpx, drawFH);
 
-            pctx.font = 'bold 36px Arial'; pctx.fillStyle = '#000000';
+            pctx.font = '26px Arial'; pctx.fillStyle = '#000000';
             pctx.direction = 'ltr';
             pctx.textAlign = 'right'; 
             pctx.fillText(`(${pNum})`, pageWpx - Math.round(15 / mmPerPx), Math.round(10 / mmPerPx));
