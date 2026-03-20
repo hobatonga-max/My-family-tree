@@ -750,10 +750,10 @@
 
     #pageScroll .wrap {
       direction: rtl !important;
-      /* Using flex centering to pull content to middle of screen */
+      /* Using flex alignment to pull content to the right (RTL start) */
       display: flex !important;
       flex-direction: column !important;
-      align-items: center !important;
+      align-items: flex-start !important;
       width: max-content !important;
       min-width: 100% !important;
       max-width: none !important;
@@ -2205,7 +2205,8 @@
 
             pctx.font = 'bold 36px Arial'; pctx.fillStyle = '#000000';
             pctx.direction = 'ltr';
-            pctx.fillText(`(${pNum})`, Math.round(15 / mmPerPx), Math.round(10 / mmPerPx));
+            pctx.textAlign = 'right'; 
+            pctx.fillText(`(${pNum})`, pageWpx - Math.round(15 / mmPerPx), Math.round(10 / mmPerPx));
           }
 
           pages.push({ dataUrl: finalPageCanvas.toDataURL('image/png'), pageNum: pNum });
