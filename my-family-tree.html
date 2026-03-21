@@ -936,6 +936,8 @@
             <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
               <button id="addChildBtn" class="btn">إضافة ابن/ابنة للمحدد</button>
               <button id="renameBtn" class="btn">تعديل اسم المحدد</button>
+              <button id="moveUpBtn" class="btn">نقل لأعلى</button>
+              <button id="moveDownBtn" class="btn">نقل لأسفل</button>
               <button id="deleteBtn" class="btn">حذف المحدد</button>
             </div>
           </div>
@@ -2477,6 +2479,50 @@
           setStatus(`⚠️ ${String(e?.message || e)}`);
         }
       });
+
+      function moveMember(direction) {
+        try {
+          const id = appState.selectedId;
+          if (!id) throw new Error('اختر شخصاً أولا');
+
+          const people = appState.people || [];
+          const parentId = deriveParent(id);
+          if (!parentId) throw new Error('لا يمكن تحريك الجد الأكبر');
+
+          // 1. Find all siblings in current array order
+          const siblings = people.filter(p => deriveParent(p.id) === parentId);
+          if (siblings.length < 2) throw new Error('لا يوجد إخوة للتبديل معهم');
+
+          // 2. Find self among siblings
+          const selfIdxInSibs = siblings.findIndex(p => p.id === id);
+          const targetIdxInSibs = selfIdxInSibs + direction;
+
+          if (targetIdxInSibs < 0 || targetIdxInSibs >= siblings.length) {
+            return; // Already at edge
+          }
+
+          const targetId = siblings[targetIdxInSibs].id;
+
+          // 3. Find absolute indices in the global people array
+          const absoluteSelfIdx = people.findIndex(p => p.id === id);
+          const absoluteTargetIdx = people.findIndex(p => p.id === targetId);
+
+          // 4. Swap them
+          const temp = people[absoluteSelfIdx];
+          people[absoluteSelfIdx] = people[absoluteTargetIdx];
+          people[absoluteTargetIdx] = temp;
+
+          appState.people = [...people];
+          persist();
+          renderTree();
+          setStatus('✅ تم تغيير الترتيب.');
+        } catch (e) {
+          setStatus(`⚠️ ${String(e?.message || e)}`);
+        }
+      }
+
+      $('moveUpBtn')?.addEventListener('click', () => moveMember(-1));
+      $('moveDownBtn')?.addEventListener('click', () => moveMember(1));
 
       let pendingDeleteId = null;
 
