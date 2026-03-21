@@ -384,7 +384,7 @@
       padding: 0 !important;
       margin: 0 !important;
       text-align: center;
-
+      white-space: pre-line;
       pointer-events: none;
     }
 
@@ -1665,7 +1665,7 @@
 
           const ctext = document.createElement('div');
           ctext.className = 'circle-text';
-          ctext.textContent = node.name;
+          ctext.textContent = (node.name || '').split(' ').join('\n');
           circle.appendChild(ctext);
 
           if (kids.length) {
